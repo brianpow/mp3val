@@ -20,8 +20,6 @@
 #ifndef __OUT_H__
 #define __OUT_H__
 
-#include <windows.h>
-
-int WriteToFile(HANDLE hFile,char *baseptr,int index,int bytes,int iFileSize);
+int WriteToFile(int hFile,char *baseptr,int index,int bytes,int iFileSize);
 
 #endif

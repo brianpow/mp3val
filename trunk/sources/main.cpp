@@ -23,41 +23,38 @@
 
 using namespace std;
 
-#include <windows.h>
+#include "crossapi.h"
 #include "mpegparse.h"
 #include "report.h"
 
-HANDLE hFile;
-HANDLE hFileMapping;
-
-char pcBuffer[MAX_PATH+1];
-char pcDirBuffer[MAX_PATH+1];
+char pcBuffer[CROSSAPI_MAX_PATH+1];
+char pcBuffer2[CROSSAPI_MAX_PATH+1];
 
 bool FixErrors=false;
 
-LPVOID MapFile(char *filename);
-int UnmapFile(LPVOID);
+extern int iMappingLength;
+
 int SplitFileName(char *szFileNameIn,char **szPathOut,char **szFileNameOut);
 
 int main(int argc, char *argv[]) {
 	MPEGINFO mpginfo;
 	unsigned char *pImage;
 	ofstream log_out;
-	HANDLE hData,hFind;
+	unsigned int hData,hFind;
 	ostream *out;
 	char *p;
 	bool FixErrors=false;
 	char *szLogFile=NULL;
 	int i;
-	WIN32_FIND_DATA wfd;
+	CROSSAPI_FIND_DATA cfd;
 	
 	char *szFile,*szPath;
 	
-	char szStartDir[MAX_PATH+2];
+	char szStartDir[CROSSAPI_MAX_PATH+2];
 
 	if(argc<2) {
 		cerr<<"MP3val - a program for MPEG audio stream validation\n";
-		cerr<<"Version 0.1.1\n";
+		cerr<<"Version 0.1.1+ (not for public release)\n";
 		cerr<<"Usage: "<<argv[0]<<" <file to validate> [-l<log file>] [-f]\n";
 		cerr<<"-f - try to fix errors\n";
 		cerr<<"Wildcards are allowed.\n";
@@ -86,33 +83,33 @@ int main(int argc, char *argv[]) {
 		SplitFileName(argv[i],&szPath,&szFile);
 	
 		if(szPath) {
-			GetCurrentDirectory(MAX_PATH,szStartDir);
-			SetCurrentDirectory(szPath);
+			CrossAPI_GetCurrentDirectory(CROSSAPI_MAX_PATH,szStartDir);
+			CrossAPI_SetCurrentDirectory(szPath);
 		}
 
-		hFind=FindFirstFile(szFile,&wfd);
-		if(hFind==INVALID_HANDLE_VALUE) {
+		hFind=CrossAPI_FindFirstFile(szFile,&cfd);
+		if(hFind==-1) {
 			cerr<<"Cannot open input file "<<szFile<<'\n';
 			continue;
 		}
 		
 		do {
-			if(wfd.dwFileAttributes&FILE_ATTRIBUTE_DIRECTORY) continue;
+			if(cfd.bIsDirectory) continue;
 			
-			pImage=(unsigned char *)MapFile(wfd.cFileName);
+			pImage=(unsigned char *)CrossAPI_MapFile(cfd.cFileName);
 	
 			if(!pImage) {
-				cerr<<"Cannot open input file "<<wfd.cFileName<<'\n';
+				cerr<<"Cannot open input file "<<cfd.cFileName<<'\n';
 				continue;
 			}
 			
-			if(szPath) SetCurrentDirectory(szStartDir);
+			if(szPath) CrossAPI_SetCurrentDirectory(szStartDir);
 			
 			if(szLogFile) {
 				log_out.open(szLogFile,ios::out|ios::app|ios::binary);
 				if(!log_out) {
 					cerr<<"Cannot open log file\n";
-					UnmapFile(pImage);
+					CrossAPI_UnmapFile(pImage);
 					continue;
 				}
 				out=&log_out;
@@ -121,48 +118,46 @@ int main(int argc, char *argv[]) {
 				out=&cout;
 			}
 			
-			if(szPath) SetCurrentDirectory(szPath);
+			if(szPath) CrossAPI_SetCurrentDirectory(szPath);
 	
-			cout<<"Analyzing file \""<<wfd.cFileName<<"\"...\n";
+			cout<<"Analyzing file \""<<cfd.cFileName<<"\"...\n";
 			
-			if(GetFullPathName(wfd.cFileName,MAX_PATH+1,(char *)pcBuffer,&p)) ValidateFile(pImage,GetFileSize(hFile,NULL),&mpginfo,out,pcBuffer,false,NULL);
-			else ValidateFile(pImage,GetFileSize(hFile,NULL),&mpginfo,out,wfd.cFileName,false,NULL);
+			if(CrossAPI_GetFullPathName(cfd.cFileName,(char *)pcBuffer,CROSSAPI_MAX_PATH+1)) ValidateFile(pImage,iMappingLength,&mpginfo,out,pcBuffer,false,-1);
+			else ValidateFile(pImage,iMappingLength,&mpginfo,out,cfd.cFileName,false,-1);
 	
-			if(GetFullPathName(wfd.cFileName,MAX_PATH+1,(char *)pcBuffer,&p)) PrintReport(out,pcBuffer,&mpginfo);
-			else PrintReport(out,wfd.cFileName,&mpginfo);
+			if(CrossAPI_GetFullPathName(cfd.cFileName,(char *)pcBuffer,CROSSAPI_MAX_PATH+1)) PrintReport(out,pcBuffer,&mpginfo);
+			else PrintReport(out,cfd.cFileName,&mpginfo);
 	
 			if(FixErrors&&mpginfo.iErrors) {
-				GetTempPath(MAX_PATH,(char *)pcDirBuffer);
-				GetTempFileName((char *)pcDirBuffer,"mp3",0,(char *)pcBuffer);
-				hData=CreateFile((char *)pcBuffer,GENERIC_WRITE,0,NULL,CREATE_ALWAYS,FILE_ATTRIBUTE_NORMAL,NULL);
-				if(hData==INVALID_HANDLE_VALUE) {
+				hData=CrossAPI_GetTempFileAndName(CROSSAPI_MAX_PATH,pcBuffer);
+				if(hData==-1) {
 					cerr<<"Cannot open temporary file\n";
-					UnmapFile(pImage);
+					CrossAPI_UnmapFile(pImage);
 					log_out.close();
 					continue;
 				}
 	
-				cout<<"Rebuilding file \""<<wfd.cFileName<<"\"...\n";
+				cout<<"Rebuilding file \""<<cfd.cFileName<<"\"...\n";
 	
-				ValidateFile(pImage,GetFileSize(hFile,NULL),&mpginfo,NULL,NULL,true,hData);
+				ValidateFile(pImage,iMappingLength,&mpginfo,NULL,NULL,true,(int)hData);
 	
-				CloseHandle(hData);
+				CrossAPI_CloseFile(hData);
 			}
 	
-			UnmapFile(pImage);
+			CrossAPI_UnmapFile(pImage);
 	
 			if(FixErrors&&mpginfo.iErrors) {
-				strcpy((char *)pcDirBuffer,wfd.cFileName);
-				strcat((char *)pcDirBuffer,".bak");
-				if(!MoveFile(wfd.cFileName,(char *)pcDirBuffer)) {
-					cerr<<"Error renaming \""<<wfd.cFileName<<"\"\n";
-					UnmapFile(pImage);
+				strcpy((char *)pcBuffer2,cfd.cFileName);
+				strcat((char *)pcBuffer2,".bak");
+				if(!CrossAPI_MoveFile((char *)pcBuffer2,cfd.cFileName)) {
+					cerr<<"Error renaming \""<<cfd.cFileName<<"\"\n";
+					CrossAPI_UnmapFile(pImage);
 					log_out.close();
 					continue;
 				}
-				if(!MoveFile(pcBuffer,wfd.cFileName)) {
+				if(!CrossAPI_MoveFile(cfd.cFileName,pcBuffer)) {
 					cerr<<"Error renaming temporary file\n";
-					UnmapFile(pImage);
+					CrossAPI_UnmapFile(pImage);
 					log_out.close();
 					continue;
 				}
@@ -170,41 +165,17 @@ int main(int argc, char *argv[]) {
 			}
 	
 			if(FixErrors&&mpginfo.iErrors) {
-				if(GetFullPathName(wfd.cFileName,MAX_PATH+1,(char *)pcBuffer,&p)) PrintMessage(out,"FIXED",pcBuffer,"File was rebuilt",-1);
-				else PrintMessage(out,"FIXED",wfd.cFileName,"File was rebuilt",-1);
+				if(CrossAPI_GetFullPathName(cfd.cFileName,(char *)pcBuffer,CROSSAPI_MAX_PATH+1)) PrintMessage(out,"FIXED",pcBuffer,"File was rebuilt",-1);
+				else PrintMessage(out,"FIXED",cfd.cFileName,"File was rebuilt",-1);
 			}
 	
 			if(szLogFile) log_out.close();
 	
 			cout<<"Done!\n";
-		}while(FindNextFile(hFind,&wfd));
+		}while(CrossAPI_FindNextFile(hFind,&cfd));
 	
-		FindClose(hFind);
+		CrossAPI_FindClose(hFind);
 	}
-
-	return 0;
-}
-
-LPVOID MapFile(char *filename) {
-	LPVOID pImage;
-
-	hFile=CreateFile(filename,GENERIC_READ,FILE_SHARE_READ,NULL,OPEN_EXISTING,FILE_ATTRIBUTE_NORMAL,NULL);
-
-	if(hFile==INVALID_HANDLE_VALUE) {
-		return NULL;
-	}
-
-	hFileMapping=CreateFileMapping(hFile,NULL,PAGE_READONLY,0,0,NULL);
-
-	pImage=MapViewOfFile(hFileMapping,FILE_MAP_READ,0,0,0);
-
-	return pImage;
-}
-
-int UnmapFile(LPVOID pImage) {
-	UnmapViewOfFile(pImage);
-	CloseHandle(hFileMapping);
-	CloseHandle(hFile);
 
 	return 0;
 }

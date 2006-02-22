@@ -18,15 +18,16 @@
  */
 
 #include "out.h"
+#include "crossapi.h"
 
 static int iPrevSize=0;
 
-int WriteToFile(HANDLE hFile,char *baseptr,int index,int bytes,int iFileSize) {
+int WriteToFile(int hFile,char *baseptr,int index,int bytes,int iFileSize) {
 	int tmp;
-	DWORD dwBytesWritten,dwBytesWrittenTotal=0;
+	int iBytesWritten,iBytesWrittenTotal=0;
 
 	if(bytes<0) {
-		if(iPrevSize) SetFilePointer(hFile,-iPrevSize,NULL,FILE_CURRENT);
+		if(iPrevSize) CrossAPI_SetFilePointer(hFile,-iPrevSize,true);
 		tmp=iPrevSize;
 		iPrevSize=0;
 		return tmp;
@@ -36,11 +37,11 @@ int WriteToFile(HANDLE hFile,char *baseptr,int index,int bytes,int iFileSize) {
 		if(index+bytes>iFileSize) bytes=iFileSize-index;
 	}
 
-	while(dwBytesWrittenTotal<(DWORD)bytes) {
-		if(!WriteFile(hFile,&baseptr[index+dwBytesWrittenTotal],bytes-dwBytesWrittenTotal,&dwBytesWritten,NULL)) {
+	while(iBytesWrittenTotal<(DWORD)bytes) {
+		if(!CrossAPI_WriteFile(hFile,&baseptr[index+iBytesWrittenTotal],bytes-iBytesWrittenTotal,&iBytesWritten)) {
 			return -1;
 		}
-		dwBytesWrittenTotal+=dwBytesWritten;
+		iBytesWrittenTotal+=iBytesWritten;
 	}
 
 	iPrevSize=bytes;

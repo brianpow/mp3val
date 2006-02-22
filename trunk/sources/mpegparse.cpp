@@ -17,13 +17,13 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#include "crossapi.h"
 #include "mpegparse.h"
 #include "report.h"
 #include "out.h"
 #include <cstring>
 #include <iostream>
 #include <fstream>
-#include <windows.h>
 
 using namespace std;
 
@@ -46,7 +46,7 @@ int MPEGResync(unsigned char *baseptr,int index,int iFileSize,int frames);
 
 DWORD rotate_dword(DWORD x);
 
-int ValidateFile(unsigned char *baseptr,int iFileSize,MPEGINFO *mpginfo,ostream *out,char *filename,bool fix,HANDLE hFile) {
+int ValidateFile(unsigned char *baseptr,int iFileSize,MPEGINFO *mpginfo,ostream *out,char *filename,bool fix,int hFile) {
 	int iFrame;
 	int iFrameSize;
 	int iLastMPEGFrame=0,iNewFrame;
@@ -103,7 +103,7 @@ int ValidateFile(unsigned char *baseptr,int iFileSize,MPEGINFO *mpginfo,ostream 
 //MPEG frame
 			iFrameSize=ValidateMPEGFrame(baseptr,iFrame,mpginfo);
 			if(iFrameSize!=-1) {
-				if(fix&&!WasFirstFrame) iFirstMPEGFrameOffset=SetFilePointer(hFile,0,NULL,FILE_CURRENT);
+				if(fix&&!WasFirstFrame) iFirstMPEGFrameOffset=CrossAPI_SetFilePointer(hFile,0,true);
 				if(fix) {
 					WriteToFile(hFile,(char *)baseptr,iFrame,iFrameSize,iFileSize);
 					LastFrameWasMPEG=true;
@@ -207,30 +207,30 @@ int ValidateFile(unsigned char *baseptr,int iFileSize,MPEGINFO *mpginfo,ostream 
 
 	if(fix&&mpginfo->id3v1) WriteToFile(hFile,(char *)baseptr,iID3v1Offset,128,-1);
 
-	if(fix) SetEndOfFile(hFile);
+	if(fix) CrossAPI_SetEndOfFile(hFile);
 
 	if(fix&&mpginfo->VBRHeaderPresent) {
 		if(mpginfo->IsXingHeader) {
 			if(mpginfo->BytesPresent&&mpginfo->FramesPresent) {
-				SetFilePointer(hFile,iFirstMPEGFrameOffset+iXingOffset+12,NULL,FILE_BEGIN);
+				CrossAPI_SetFilePointer(hFile,iFirstMPEGFrameOffset+iXingOffset+12,false);
 				dwTemp=rotate_dword(mpeg_total-mpginfo->iDeletedFrames);
 				WriteToFile(hFile,(char *)&dwTemp,0,4,-1);
 				dwTemp=rotate_dword(mpginfo->iTotalMPEGBytes);
 				WriteToFile(hFile,(char *)&dwTemp,0,4,-1);
 			}
 			else if(mpginfo->BytesPresent) {
-				SetFilePointer(hFile,iFirstMPEGFrameOffset+iXingOffset+12,NULL,FILE_BEGIN);
+				CrossAPI_SetFilePointer(hFile,iFirstMPEGFrameOffset+iXingOffset+12,false);
 				dwTemp=rotate_dword(mpginfo->iTotalMPEGBytes);
 				WriteToFile(hFile,(char *)&dwTemp,0,4,-1);
 			}
 			else if(mpginfo->FramesPresent) {
-				SetFilePointer(hFile,iFirstMPEGFrameOffset+iXingOffset+12,NULL,FILE_BEGIN);
+				CrossAPI_SetFilePointer(hFile,iFirstMPEGFrameOffset+iXingOffset+12,false);
 				dwTemp=rotate_dword(mpeg_total-mpginfo->iDeletedFrames);
 				WriteToFile(hFile,(char *)&dwTemp,0,4,-1);
 			}
 		}
 		else {
-			SetFilePointer(hFile,iFirstMPEGFrameOffset+46,NULL,FILE_BEGIN);
+			CrossAPI_SetFilePointer(hFile,iFirstMPEGFrameOffset+46,false);
 			dwTemp=rotate_dword(mpginfo->iTotalMPEGBytes);
 			WriteToFile(hFile,(char *)&dwTemp,0,4,-1);
 			dwTemp=rotate_dword(mpeg_total-mpginfo->iDeletedFrames);

@@ -21,7 +21,6 @@
 #define __MPEGPARSE_H__
 
 #include <iostream>
-#include <windows.h>
 
 struct MPEGINFO {
 //MPEG frames counts
@@ -105,6 +104,6 @@ struct MPEGINFO {
 	}
 };
 
-int ValidateFile(unsigned char *baseptr,int iFileSize, MPEGINFO *mpginfo,std::ostream *out,char *filename,bool fix,HANDLE hFile);
+int ValidateFile(unsigned char *baseptr,int iFileSize, MPEGINFO *mpginfo,std::ostream *out,char *filename,bool fix,int hFile);
 
 #endif
