@@ -273,7 +273,7 @@ void *CrossAPI_MapFile(char *filename) {
 
 	pImage=mmap(NULL,iRoundedMappingLength,PROT_READ,0,hFile,0);
 	
-	if(pImage=MAP_FAILED) return NULL;
+	if(pImage==MAP_FAILED) return NULL;
 
 	return pImage;
 }
