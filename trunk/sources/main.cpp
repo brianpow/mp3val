@@ -55,7 +55,7 @@ int main(int argc, char *argv[]) {
 	if(argc<2) {
 		cerr<<"MP3val - a program for MPEG audio stream validation\n";
 		cerr<<"Version 0.1.1+ (not for public release)\n";
-		cerr<<"Usage: "<<argv[0]<<" <file to validate> [-l<log file>] [-f]\n";
+		cerr<<"Usage: "<<argv[0]<<" <files to validate> [-l<log file>] [-f]\n";
 		cerr<<"-f - try to fix errors\n";
 		cerr<<"Wildcards are allowed.\n";
 		cerr<<"If log file isn't specified, stdout will be used.\n\n";

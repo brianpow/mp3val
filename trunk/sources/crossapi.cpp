@@ -74,7 +74,7 @@ int CrossAPI_WriteFile(int iHandle,char *pcBuffer,int iBytes,int *iBytesWritten)
 }
 
 int CrossAPI_CloseFile(int iHandle) {
-	CloseHandle(HANDLE(iHandle));
+	return CloseHandle(HANDLE(iHandle));
 }
 
 int CrossAPI_GetFileSize(int iHandle) {
@@ -124,10 +124,13 @@ int CrossAPI_UnmapFile(void *pImage) {
 #include <stdlib.h>
 #include <stdio.h>
 #include <errno.h>
+#include <math.h>
 
 #define TMPBUFSIZE 8192
 
 char pcTmpBuf[TMPBUFSIZE];
+
+int iRoundedMappingLength;
 
 int CrossAPI_GetCurrentDirectory(int iBufSize,char *pcBuffer) {
 	char *res;
@@ -256,6 +259,7 @@ int CrossAPI_SetEndOfFile(int iHandle) {
 
 void *CrossAPI_MapFile(char *filename) {
 	void *pImage;
+	double dPages;
 
 	hFile=open(filename,O_RDONLY);
 
@@ -264,14 +268,18 @@ void *CrossAPI_MapFile(char *filename) {
 	}
 	
 	iMappingLength=CrossAPI_GetFileSize(hFile);
+	dPages=iMappingLength/getpagesize();
+	iRoundedMappingLength=((int)ceil(dPages)+1)*getpagesize();
 
-	pImage=mmap(NULL,iMappingLength,PROT_READ,0,hFile,0);
+	pImage=mmap(NULL,iRoundedMappingLength,PROT_READ,0,hFile,0);
+	
+	if(pImage=MAP_FAILED) return NULL;
 
 	return pImage;
 }
 
 int CrossAPI_UnmapFile(void *pImage) {
-	munmap(pImage,iMappingLength);
+	munmap(pImage,iRoundedMappingLength);
 	close(hFile);
 	return 0;
 }
