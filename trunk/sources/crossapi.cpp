@@ -56,6 +56,7 @@ int CrossAPI_GetTempFileAndName(int iBufSize,char *pcBuffer) {
 }
 
 int CrossAPI_MoveFile(char *szNewName,char *szOldName) {
+	DeleteFile(szNewName);
 	return MoveFile(szOldName,szNewName);
 }
 
@@ -179,6 +180,8 @@ int CrossAPI_MoveFile(char *szNewName,char *szOldName) {
 	int iBytesRead,iBytesWritten,iTotalBytesWritten;
 	int id,od;
 	struct stat mystat;
+	
+	unlink(szNewName);
 
 	res=rename(szOldName,szNewName);
 	if(!res) return 1;
