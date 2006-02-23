@@ -158,6 +158,10 @@ int ValidateFile(unsigned char *baseptr,int iFileSize,MPEGINFO *mpginfo,ostream 
 				WriteToFile(hFile,NULL,0,-1,-1);
 			}
 		}
+		else if(LastFrameWasMPEG) {
+			mpginfo->iDeletedFrames++;
+			mpginfo->iTotalMPEGBytes-=GetLastFrameSize();
+		}
 
 		if(!iFrame) {
 			iNewFrame=MPEGResync(baseptr,iFrame,iFileSize,8);
@@ -196,10 +200,16 @@ int ValidateFile(unsigned char *baseptr,int iFileSize,MPEGINFO *mpginfo,ostream 
 		mpginfo->mpeg25layer1+
 		mpginfo->mpeg25layer2+
 		mpginfo->mpeg25layer3;
-
-	if(fix&&mpginfo->truncated) {
-		WriteToFile(hFile,NULL,0,-1,-1);
-		if(LastFrameWasMPEG) {
+	
+	if(mpginfo->truncated>=0) {
+		if(fix) {
+			WriteToFile(hFile,NULL,0,-1,-1);
+			if(LastFrameWasMPEG) {
+				mpginfo->iTotalMPEGBytes-=iFrameSize;
+				mpginfo->iDeletedFrames++;
+			}
+		}
+		else if(LastFrameWasMPEG) {
 			mpginfo->iTotalMPEGBytes-=iFrameSize;
 			mpginfo->iDeletedFrames++;
 		}

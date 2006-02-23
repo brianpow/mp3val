@@ -22,6 +22,10 @@
 
 static int iPrevSize=0;
 
+int GetLastFrameSize() {
+	return iPrevSize;
+}
+
 int WriteToFile(int hFile,char *baseptr,int index,int bytes,int iFileSize) {
 	int tmp;
 	int iBytesWritten,iBytesWrittenTotal=0;
