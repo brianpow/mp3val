@@ -47,21 +47,29 @@ int main(int argc, char *argv[]) {
 	char *szLogFile=NULL;
 	int i;
 	CROSSAPI_FIND_DATA cfd;
+	bool help=false;
 	
 	char *szFile,*szPath;
 	
 	char szStartDir[CROSSAPI_MAX_PATH+2];
+	
+	if(argc<2) help=true;
+	if(argc==2) {
+		if(!strcmp(argv[1],"/?")) help=true;
+		else if(!strcmp(argv[1],"-h")) help=true;
+		else if(!strcmp(argv[1],"--help")) help=true;
+	}
 
-	if(argc<2) {
+	if(help) {
 		cerr<<"MP3val - a program for MPEG audio stream validation\n";
-		cerr<<"Version 0.1.2\n";
+		cerr<<"Version 0.1.2+ (not for public release)\n";
 		cerr<<"Usage: "<<argv[0]<<" <files to validate> [-l<log file>] [-f]\n";
 		cerr<<"-f - try to fix errors\n";
 		cerr<<"Wildcards are allowed.\n";
 		cerr<<"If log file isn't specified, stdout will be used.\n\n";
 		cerr<<"(c) ring0, jetsys, 2005-2006.\n";
 		cerr<<"This program is released under GPL, see the attached file for details.\n";
-		return -1;
+		return 0;
 	}
 	
 	for(i=1;i<argc;i++) {
