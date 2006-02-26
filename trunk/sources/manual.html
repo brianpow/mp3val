@@ -35,7 +35,7 @@
 	<p><a name="how"><h3>3. How to use it?</h3>
 	<p>MP3val is a console program. Command-line syntax:
 		<pre>
-	MP3val <i>&lt;files to validate&gt;</i> [-l<i>&lt;log file&gt;</i>] [-f]
+	mp3val <i>&lt;files to validate&gt;</i> [-l<i>&lt;log file&gt;</i>] [-f]
 		</pre>
 	<p>Square brackets represent not necessary arguments.
 	<p><i>&lt;files to validate&gt;</i> - MPEG audio file(s) name(s). Can contain wildcards.
@@ -43,7 +43,7 @@
 	<p>[-f] - try to fix errors.
 	<p>Example:
 		<pre>
-	MP3val my_song.mp3 -lout.log -f
+	mp3val my_song.mp3 -lout.log -f
 		</pre>
 	<p>MP3val will give information about the file with the name specified. Any errors or inconsistencies will result in a "WARNING" message. This doesn't necessarily mean that the file is corrupted. See the next section for details. If the file doesn't look like a MPEG audio file, an <i>"ERROR: invalid file format"</i> message will be generated.
 
