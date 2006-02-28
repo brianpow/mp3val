@@ -23,6 +23,8 @@
 #include <fstream>
 #include <cstdio>
 
+extern bool bSuppressInfo;
+
 int PrintMessage(ostream *out,char *caption,char *filename,char *message,int iErrorFrame);
 
 int PrintReport(ostream *out,char *filename,MPEGINFO *mpginfo) {
@@ -129,68 +131,70 @@ int PrintReport(ostream *out,char *filename,MPEGINFO *mpginfo) {
 		mpginfo->id3v2+
 		mpginfo->apev2;
 	
-	(*out)<<"INFO: ";
-	(*out)<<"\""<<filename<<"\": ";
-	if(mpeg_total) {
-		(*out)<<mpeg_total<<" MPEG frames (";
-		if(frame_types>1) {
-			(*out)<<mpginfo->mpeg1layer1<<" V1L1, ";
-			(*out)<<mpginfo->mpeg1layer2<<" V1L2, ";
-			(*out)<<mpginfo->mpeg1layer3<<" V1L3, ";
-			(*out)<<mpginfo->mpeg2layer1<<" V2L1, ";
-			(*out)<<mpginfo->mpeg2layer2<<" V2L2, ";
-			(*out)<<mpginfo->mpeg2layer3<<" V2L3, ";
-			(*out)<<mpginfo->mpeg25layer1<<" V2.5L1, ";
-			(*out)<<mpginfo->mpeg25layer2<<" V2.5L2, ";
-			(*out)<<mpginfo->mpeg25layer3<<" V2.5L3";
-		}
+	if(!bSuppressInfo) {
+		(*out)<<"INFO: ";
+		(*out)<<"\""<<filename<<"\": ";
+		if(mpeg_total) {
+			(*out)<<mpeg_total<<" MPEG frames (";
+			if(frame_types>1) {
+				(*out)<<mpginfo->mpeg1layer1<<" V1L1, ";
+				(*out)<<mpginfo->mpeg1layer2<<" V1L2, ";
+				(*out)<<mpginfo->mpeg1layer3<<" V1L3, ";
+				(*out)<<mpginfo->mpeg2layer1<<" V2L1, ";
+				(*out)<<mpginfo->mpeg2layer2<<" V2L2, ";
+				(*out)<<mpginfo->mpeg2layer3<<" V2L3, ";
+				(*out)<<mpginfo->mpeg25layer1<<" V2.5L1, ";
+				(*out)<<mpginfo->mpeg25layer2<<" V2.5L2, ";
+				(*out)<<mpginfo->mpeg25layer3<<" V2.5L3";
+			}
+			else {
+				if(mpginfo->mpeg1layer1) (*out)<<"MPEG 1 Layer I";
+				else if(mpginfo->mpeg1layer2) (*out)<<"MPEG 1 Layer II";
+				else if(mpginfo->mpeg1layer3) (*out)<<"MPEG 1 Layer III";
+				else if(mpginfo->mpeg2layer1) (*out)<<"MPEG 2 Layer I";
+				else if(mpginfo->mpeg2layer2) (*out)<<"MPEG 2 Layer II";
+				else if(mpginfo->mpeg2layer3) (*out)<<"MPEG 2 Layer III";
+				else if(mpginfo->mpeg25layer1) (*out)<<"MPEG 2.5 Layer I";
+				else if(mpginfo->mpeg25layer2) (*out)<<"MPEG 2.5 Layer II";
+				else if(mpginfo->mpeg25layer3) (*out)<<"MPEG 2.5 Layer III";
+			}
+	
+			(*out)<<"), ";
+		}	
 		else {
-			if(mpginfo->mpeg1layer1) (*out)<<"MPEG 1 Layer I";
-			else if(mpginfo->mpeg1layer2) (*out)<<"MPEG 1 Layer II";
-			else if(mpginfo->mpeg1layer3) (*out)<<"MPEG 1 Layer III";
-			else if(mpginfo->mpeg2layer1) (*out)<<"MPEG 2 Layer I";
-			else if(mpginfo->mpeg2layer2) (*out)<<"MPEG 2 Layer II";
-			else if(mpginfo->mpeg2layer3) (*out)<<"MPEG 2 Layer III";
-			else if(mpginfo->mpeg25layer1) (*out)<<"MPEG 2.5 Layer I";
-			else if(mpginfo->mpeg25layer2) (*out)<<"MPEG 2.5 Layer II";
-			else if(mpginfo->mpeg25layer3) (*out)<<"MPEG 2.5 Layer III";
-		}
-
-		(*out)<<"), ";
-	}
-	else {
 		(*out)<<"No MPEG frames, ";
-	}
+		}
 
-	if(tags_total) {
-		if(mpginfo->id3v1>1||mpginfo->id3v2>1||mpginfo->apev2>1) {
-			(*out)<<tags_total<<" tags (";
-			(*out)<<mpginfo->id3v1<<" ID3v1, ";
-			(*out)<<mpginfo->id3v2<<" ID3v2, ";
-			(*out)<<mpginfo->apev2<<" APEv2";
-			(*out)<<")";
+		if(tags_total) {
+			if(mpginfo->id3v1>1||mpginfo->id3v2>1||mpginfo->apev2>1) {
+				(*out)<<tags_total<<" tags (";
+				(*out)<<mpginfo->id3v1<<" ID3v1, ";
+				(*out)<<mpginfo->id3v2<<" ID3v2, ";
+				(*out)<<mpginfo->apev2<<" APEv2";
+				(*out)<<")";
+			}
+			else {
+				if(mpginfo->id3v1) (*out)<<"+ID3v1";
+				if(mpginfo->id3v2) (*out)<<"+ID3v2";
+				if(mpginfo->apev2) (*out)<<"+APEv2";
+			}
 		}
 		else {
-			if(mpginfo->id3v1) (*out)<<"+ID3v1";
-			if(mpginfo->id3v2) (*out)<<"+ID3v2";
-			if(mpginfo->apev2) (*out)<<"+APEv2";
+			(*out)<<"no tags";
 		}
-	}
-	else {
-		(*out)<<"no tags";
-	}
 	
-	(*out)<<", ";
+		(*out)<<", ";
 	
-	if(mpginfo->VBRHeaderPresent) {
-		if(mpginfo->IsXingHeader) (*out)<<"Xing header";
-		else (*out)<<"VBRI header";
-	}
-	else {
-		(*out)<<"no VBR header";
-	}
+		if(mpginfo->VBRHeaderPresent) {
+			if(mpginfo->IsXingHeader) (*out)<<"Xing header";
+			else (*out)<<"VBRI header";
+		}
+		else {
+			(*out)<<"no VBR header";
+		}
 
-	(*out)<<"\n";
+		(*out)<<"\n";
+	}
 
 	return 0;
 

@@ -31,6 +31,7 @@ char pcBuffer[CROSSAPI_MAX_PATH+1];
 char pcBuffer2[CROSSAPI_MAX_PATH+1];
 
 bool FixErrors=false;
+bool bSuppressInfo=false;
 
 extern int iMappingLength;
 
@@ -63,23 +64,30 @@ int main(int argc, char *argv[]) {
 	if(help) {
 		cerr<<"MP3val - a program for MPEG audio stream validation\n";
 		cerr<<"Version 0.1.2+ (not for public release)\n";
-		cerr<<"Usage: "<<argv[0]<<" <files to validate> [-l<log file>] [-f]\n";
-		cerr<<"-f - try to fix errors\n";
+		cerr<<"Usage: "<<argv[0]<<" <files to validate> [options]\n\n";
+		cerr<<"Options:\n\n";
+		cerr<<"\t-f                    try to fix errors\n";
+		cerr<<"\t-l<file name>         write log to the specified file (default: stdout)\n";
+		cerr<<"\t-si                   suppress INFO messages\n";
+		cerr<<"\n";
 		cerr<<"Wildcards are allowed.\n";
-		cerr<<"If log file isn't specified, stdout will be used.\n\n";
 		cerr<<"(c) ring0, jetsys, 2005-2006.\n";
 		cerr<<"This program is released under GPL, see the attached file for details.\n";
 		return 0;
 	}
 	
 	for(i=1;i<argc;i++) {
+		if(argv[i][0]!='-') continue;
 		if((strlen(argv[i])>=2)&&(!memcmp(argv[i],"-l",2))) {
 			szLogFile=&argv[i][2];
 		}
-		else if((strlen(argv[i])>=2)&&(!memcmp(argv[i],"-f",2))) {
+		else if(!strcmp(argv[i],"-f")) {
 			FixErrors=true;
 		}
-		else if(argv[i][0]=='\"') {
+		else if(!strcmp(argv[i],"-si")) {
+			bSuppressInfo=true;
+		}
+		else {
 			cerr<<"Wrong parameter \""<<argv[i]<<"\"\n";
 			return -1;
 		}
