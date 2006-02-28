@@ -20,6 +20,8 @@
 #include <windows.h>
 #include <commctrl.h>
 
+#include "resource.h"
+
 LRESULT CALLBACK WndProc(HWND,UINT,WPARAM,LPARAM);
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine, int iCmdShow) {
@@ -39,8 +41,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine,
 	wndclass.hInstance     = hInstance;
 	wndclass.hIcon         = LoadIcon(NULL,IDI_APPLICATION);
 	wndclass.hCursor       = LoadCursor(NULL, IDC_ARROW);
-	wndclass.hbrBackground = (HBRUSH)GetStockObject(LTGRAY_BRUSH);
-	wndclass.lpszMenuName  = NULL;
+	wndclass.hbrBackground = (HBRUSH)GetSysColorBrush(COLOR_3DFACE);
+	wndclass.lpszMenuName  = MAKEINTRESOURCE(IDM_APPMENU);
 	wndclass.lpszClassName = szAppName;
 
 	RegisterClass(&wndclass);

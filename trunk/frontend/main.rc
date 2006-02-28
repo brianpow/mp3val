@@ -1,0 +1,36 @@
+//Microsoft Developer Studio generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "winresrc.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Menu
+//
+
+IDM_APPMENU MENU DISCARDABLE 
+BEGIN
+	POPUP "&File"
+	BEGIN
+		MENUITEM "Scan &file(s)...",	IDM_FILE_SCANFILE
+		MENUITEM "Scan folder...",	IDM_FILE_SCANFOLDER
+		MENUITEM "Fix file",	IDM_FILE_FIX
+		MENUITEM SEPARATOR
+		MENUITEM "Preferences...",	IDM_FILE_PREFERENCES
+		MENUITEM SEPARATOR
+		MENUITEM "Quit",	IDM_FILE_QUIT
+	END
+	POPUP "&Help"
+	BEGIN
+		MENUITEM "&About",	IDM_HELP_ABOUT
+	END
+END
