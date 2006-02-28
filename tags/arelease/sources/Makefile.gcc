@@ -1,0 +1,15 @@
+mp3val.exe: main.o mpegparse.o out.o report.o
+	g++ main.o mpegparse.o out.o report.o -o mp3val.exe
+	strip mp3val.exe
+main.o: main.cpp
+	g++ -c main.cpp
+mpegparse.o: mpegparse.cpp
+	g++ -c mpegparse.cpp
+out.o: out.cpp
+	g++ -c out.cpp
+report.o: report.cpp
+	g++ -c report.cpp
+clean:
+	rm *.o
+	rm *.exe
+	rm *.obj
