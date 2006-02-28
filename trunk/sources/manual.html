@@ -35,12 +35,25 @@
 	<p><a name="how"><h3>3. How to use it?</h3>
 	<p>MP3val is a console program. Command-line syntax:
 		<pre>
-	mp3val <i>&lt;files to validate&gt;</i> [-l<i>&lt;log file&gt;</i>] [-f]
+	mp3val <i>&lt;files to validate&gt;</i> [<i>options</i>]
 		</pre>
-	<p>Square brackets represent not necessary arguments.
 	<p><i>&lt;files to validate&gt;</i> - MPEG audio file(s) name(s). Can contain wildcards.
-	<p>[-l<i>&lt;log file&gt;</i>] - log file name. If this argument is missing, all the information will be written to stdout.
-	<p>[-f] - try to fix errors.
+	<p><i>Options</i>:
+	<p>
+		<table width=100% border>
+			<tr>
+				<td><b>Option</b>
+				<td><b>Description</b>
+			<tr>
+				<td>-l<i>&lt;log file&gt;</i>
+				<td>Log file name. If this argument is missing, all the information will be written to stdout.
+			<tr>
+				<td>-f
+				<td>Try to fix errors.
+			<tr>
+				<td>-si
+				<td>Suppress INFO messages.
+		</table>
 	<p>Example:
 		<pre>
 	mp3val my_song.mp3 -lout.log -f
