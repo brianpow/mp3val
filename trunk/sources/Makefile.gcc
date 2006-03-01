@@ -14,4 +14,3 @@ crossapi.o: crossapi.cpp
 clean:
 	rm *.o
 	rm *.exe
-	rm *.obj

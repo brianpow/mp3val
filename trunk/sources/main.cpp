@@ -32,6 +32,7 @@ char pcBuffer2[CROSSAPI_MAX_PATH+1];
 
 bool FixErrors=false;
 bool bSuppressInfo=false;
+bool bPipeMode=false;
 
 extern int iMappingLength;
 
@@ -40,8 +41,7 @@ int SplitFileName(char *szFileNameIn,char **szPathOut,char **szFileNameOut);
 int ProcessFile(char *szFileName,char *szLogFileName);
 
 int main(int argc, char *argv[]) {
-	unsigned int hFind;
-	char *p;
+	int hFind;
 	int i;
 	CROSSAPI_FIND_DATA cfd;
 	bool help=false;
@@ -51,6 +51,9 @@ int main(int argc, char *argv[]) {
 	char *szLogFile=NULL;
 	char szFullLogFile[CROSSAPI_MAX_PATH+2];
 	char szStartDir[CROSSAPI_MAX_PATH+2];
+	
+	char szPipedFileName[CROSSAPI_MAX_PATH+2];
+	char ch;
 	
 	if(argc<2) help=true;
 	if(argc==2) {
@@ -67,6 +70,7 @@ int main(int argc, char *argv[]) {
 		cerr<<"\t-f                    try to fix errors\n";
 		cerr<<"\t-l<file name>         write log to the specified file (default: stdout)\n";
 		cerr<<"\t-si                   suppress INFO messages\n";
+		cerr<<"\t-p                    pipe mode (receive input file names from stdin)\n";
 		cerr<<"\n";
 		cerr<<"Wildcards are allowed.\n\n";
 		cerr<<"(c) ring0, jetsys, 2005-2006.\n";
@@ -85,6 +89,9 @@ int main(int argc, char *argv[]) {
 		else if(!strcmp(argv[i],"-si")) {
 			bSuppressInfo=true;
 		}
+		else if(!strcmp(argv[i],"-p")) {
+			bPipeMode=true;
+		}
 		else {
 			cerr<<"Wrong parameter \""<<argv[i]<<"\"\n";
 			return -1;
@@ -93,30 +100,49 @@ int main(int argc, char *argv[]) {
 	
 	if(szLogFile) CrossAPI_GetFullPathName(szLogFile,szFullLogFile,CROSSAPI_MAX_PATH+2);
 	
-	for(i=1;i<argc;i++) {
-		if(argv[i][0]=='-') continue;
-		
-		SplitFileName(argv[i],&szPath,&szFile);
-	
-		if(szPath) {
-			CrossAPI_GetCurrentDirectory(CROSSAPI_MAX_PATH,szStartDir);
-			CrossAPI_SetCurrentDirectory(szPath);
+	if(bPipeMode) {
+		i=0;
+		for(;;) {
+			if(i>CROSSAPI_MAX_PATH) i=0;
+			cin.get(ch);
+			if(!ch) break;
+			if(ch==0x0D||ch==0x0A) {
+				szPipedFileName[i]='\0';
+				if(*szPipedFileName) ProcessFile(szPipedFileName,szLogFile?szFullLogFile:NULL);
+				i=0;
+			}
+			else {
+				szPipedFileName[i]=ch;
+				i++;
+			}
 		}
-
-		hFind=CrossAPI_FindFirstFile(szFile,&cfd);
-		if(hFind==-1) {
-			cerr<<"Cannot open input file "<<szFile<<'\n';
-			continue;
-		}
+	}
+	else {
+		for(i=1;i<argc;i++) {
+			if(argv[i][0]=='-') continue;
+			
+			SplitFileName(argv[i],&szPath,&szFile);
 		
-		do {
-			if(cfd.bIsDirectory) continue;
-			ProcessFile(cfd.cFileName,szLogFile?szFullLogFile:NULL);
-		}while(CrossAPI_FindNextFile(hFind,&cfd));
+			if(szPath) {
+				CrossAPI_GetCurrentDirectory(CROSSAPI_MAX_PATH,szStartDir);
+				CrossAPI_SetCurrentDirectory(szPath);
+			}
 	
-		CrossAPI_FindClose(hFind);
+			hFind=CrossAPI_FindFirstFile(szFile,&cfd);
+			if(hFind==-1) {
+				cerr<<"Cannot open input file "<<szFile<<'\n';
+				continue;
+			}
+			
+			do {
+				if(cfd.bIsDirectory) continue;
+				ProcessFile(cfd.cFileName,szLogFile?szFullLogFile:NULL);
+			}while(CrossAPI_FindNextFile(hFind,&cfd));
 		
-		if(szPath) CrossAPI_SetCurrentDirectory(szStartDir);
+			CrossAPI_FindClose(hFind);
+			
+			if(szPath) CrossAPI_SetCurrentDirectory(szStartDir);
+		}
 	}
 
 	return 0;
@@ -126,13 +152,13 @@ int ProcessFile(char *szFileName,char *szLogFileName) {
 	MPEGINFO mpginfo;
 	unsigned char *pImage;
 	ofstream log_out;
-	unsigned int hData;
+	int hData;
 	ostream *out;
-
+	
 	pImage=(unsigned char *)CrossAPI_MapFile(szFileName);
 
 	if(!pImage) {
-		cerr<<"Cannot open input file "<<szFileName<<'\n';
+		cerr<<"Cannot open input file \""<<szFileName<<"\" or it is empty\n";
 		return 0;
 	}
 	
@@ -207,7 +233,6 @@ int ProcessFile(char *szFileName,char *szLogFileName) {
 
 
 int SplitFileName(char *szFileNameIn,char **szPathOut,char **szFileNameOut) {
-	int i;
 	char *p;
 	
 	if(!szFileNameIn||!*szFileNameIn) return 1;
