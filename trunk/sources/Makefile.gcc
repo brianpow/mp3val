@@ -1,16 +1,16 @@
 mp3val.exe: main.o mpegparse.o out.o report.o crossapi.o
-	g++ main.o mpegparse.o out.o report.o crossapi.o -o mp3val.exe
+	g++ -Wall main.o mpegparse.o out.o report.o crossapi.o -o mp3val.exe
 	strip mp3val.exe
 main.o: main.cpp
-	g++ -c main.cpp
+	g++ -Wall -c main.cpp
 mpegparse.o: mpegparse.cpp
-	g++ -c mpegparse.cpp
+	g++ -Wall -c mpegparse.cpp
 out.o: out.cpp
-	g++ -c out.cpp
+	g++ -Wall -c out.cpp
 report.o: report.cpp
-	g++ -c report.cpp
+	g++ -Wall -c report.cpp
 crossapi.o: crossapi.cpp
-	g++ -c crossapi.cpp
+	g++ -Wall -c crossapi.cpp
 clean:
 	rm *.o
 	rm *.exe
