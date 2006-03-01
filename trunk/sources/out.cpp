@@ -41,7 +41,7 @@ int WriteToFile(int hFile,char *baseptr,int index,int bytes,int iFileSize) {
 		if(index+bytes>iFileSize) bytes=iFileSize-index;
 	}
 
-	while(iBytesWrittenTotal<(DWORD)bytes) {
+	while(iBytesWrittenTotal<bytes) {
 		if(!CrossAPI_WriteFile(hFile,&baseptr[index+iBytesWrittenTotal],bytes-iBytesWrittenTotal,&iBytesWritten)) {
 			return -1;
 		}
