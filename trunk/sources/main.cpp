@@ -37,21 +37,19 @@ extern int iMappingLength;
 
 int SplitFileName(char *szFileNameIn,char **szPathOut,char **szFileNameOut);
 
+int ProcessFile(char *szFileName,char *szLogFileName);
+
 int main(int argc, char *argv[]) {
-	MPEGINFO mpginfo;
-	unsigned char *pImage;
-	ofstream log_out;
-	unsigned int hData,hFind;
-	ostream *out;
+	unsigned int hFind;
 	char *p;
-	bool FixErrors=false;
-	char *szLogFile=NULL;
 	int i;
 	CROSSAPI_FIND_DATA cfd;
 	bool help=false;
 	
 	char *szFile,*szPath;
 	
+	char *szLogFile=NULL;
+	char szFullLogFile[CROSSAPI_MAX_PATH+2];
 	char szStartDir[CROSSAPI_MAX_PATH+2];
 	
 	if(argc<2) help=true;
@@ -70,7 +68,7 @@ int main(int argc, char *argv[]) {
 		cerr<<"\t-l<file name>         write log to the specified file (default: stdout)\n";
 		cerr<<"\t-si                   suppress INFO messages\n";
 		cerr<<"\n";
-		cerr<<"Wildcards are allowed.\n";
+		cerr<<"Wildcards are allowed.\n\n";
 		cerr<<"(c) ring0, jetsys, 2005-2006.\n";
 		cerr<<"This program is released under GPL, see the attached file for details.\n";
 		return 0;
@@ -93,6 +91,8 @@ int main(int argc, char *argv[]) {
 		}
 	}
 	
+	if(szLogFile) CrossAPI_GetFullPathName(szLogFile,szFullLogFile,CROSSAPI_MAX_PATH+2);
+	
 	for(i=1;i<argc;i++) {
 		if(argv[i][0]=='-') continue;
 		
@@ -111,90 +111,100 @@ int main(int argc, char *argv[]) {
 		
 		do {
 			if(cfd.bIsDirectory) continue;
-			
-			pImage=(unsigned char *)CrossAPI_MapFile(cfd.cFileName);
-	
-			if(!pImage) {
-				cerr<<"Cannot open input file "<<cfd.cFileName<<'\n';
-				continue;
-			}
-			
-			if(szPath) CrossAPI_SetCurrentDirectory(szStartDir);
-			
-			if(szLogFile) {
-				log_out.open(szLogFile,ios::out|ios::app|ios::binary);
-				if(!log_out) {
-					cerr<<"Cannot open log file\n";
-					CrossAPI_UnmapFile(pImage);
-					continue;
-				}
-				out=&log_out;
-			}
-			else {
-				out=&cout;
-			}
-			
-			if(szPath) CrossAPI_SetCurrentDirectory(szPath);
-	
-			cout<<"Analyzing file \""<<cfd.cFileName<<"\"...\n";
-			
-			if(CrossAPI_GetFullPathName(cfd.cFileName,(char *)pcBuffer,CROSSAPI_MAX_PATH+1)) ValidateFile(pImage,iMappingLength,&mpginfo,out,pcBuffer,false,-1);
-			else ValidateFile(pImage,iMappingLength,&mpginfo,out,cfd.cFileName,false,-1);
-	
-			if(CrossAPI_GetFullPathName(cfd.cFileName,(char *)pcBuffer,CROSSAPI_MAX_PATH+1)) PrintReport(out,pcBuffer,&mpginfo);
-			else PrintReport(out,cfd.cFileName,&mpginfo);
-	
-			if(FixErrors&&mpginfo.iErrors) {
-				hData=CrossAPI_GetTempFileAndName(CROSSAPI_MAX_PATH,pcBuffer);
-				if(hData==-1) {
-					cerr<<"Cannot open temporary file\n";
-					CrossAPI_UnmapFile(pImage);
-					log_out.close();
-					continue;
-				}
-	
-				cout<<"Rebuilding file \""<<cfd.cFileName<<"\"...\n";
-	
-				ValidateFile(pImage,iMappingLength,&mpginfo,NULL,NULL,true,(int)hData);
-	
-				CrossAPI_CloseFile(hData);
-			}
-	
-			CrossAPI_UnmapFile(pImage);
-	
-			if(FixErrors&&mpginfo.iErrors) {
-				strcpy((char *)pcBuffer2,cfd.cFileName);
-				strcat((char *)pcBuffer2,".bak");
-				if(!CrossAPI_MoveFile((char *)pcBuffer2,cfd.cFileName)) {
-					cerr<<"Error renaming \""<<cfd.cFileName<<"\"\n";
-					CrossAPI_UnmapFile(pImage);
-					log_out.close();
-					continue;
-				}
-				if(!CrossAPI_MoveFile(cfd.cFileName,pcBuffer)) {
-					cerr<<"Error renaming temporary file\n";
-					CrossAPI_UnmapFile(pImage);
-					log_out.close();
-					continue;
-				}
-	
-			}
-	
-			if(FixErrors&&mpginfo.iErrors) {
-				if(CrossAPI_GetFullPathName(cfd.cFileName,(char *)pcBuffer,CROSSAPI_MAX_PATH+1)) PrintMessage(out,"FIXED",pcBuffer,"File was rebuilt",-1);
-				else PrintMessage(out,"FIXED",cfd.cFileName,"File was rebuilt",-1);
-			}
-	
-			if(szLogFile) log_out.close();
-	
-			cout<<"Done!\n";
+			ProcessFile(cfd.cFileName,szLogFile?szFullLogFile:NULL);
 		}while(CrossAPI_FindNextFile(hFind,&cfd));
 	
 		CrossAPI_FindClose(hFind);
+		
+		if(szPath) CrossAPI_SetCurrentDirectory(szStartDir);
 	}
 
 	return 0;
 }
+
+int ProcessFile(char *szFileName,char *szLogFileName) {
+	MPEGINFO mpginfo;
+	unsigned char *pImage;
+	ofstream log_out;
+	unsigned int hData;
+	ostream *out;
+
+	pImage=(unsigned char *)CrossAPI_MapFile(szFileName);
+
+	if(!pImage) {
+		cerr<<"Cannot open input file "<<szFileName<<'\n';
+		return 0;
+	}
+	
+	if(szLogFileName) {
+		log_out.open(szLogFileName,ios::out|ios::app|ios::binary);
+		if(!log_out) {
+			cerr<<"Cannot open log file\n";
+			CrossAPI_UnmapFile(pImage);
+			return 0;
+		}
+		out=&log_out;
+	}
+	else {
+		out=&cout;
+	}
+	
+	cout<<"Analyzing file \""<<szFileName<<"\"...\n";
+	
+	if(CrossAPI_GetFullPathName(szFileName,(char *)pcBuffer,CROSSAPI_MAX_PATH+1)) ValidateFile(pImage,iMappingLength,&mpginfo,out,pcBuffer,false,-1);
+	else ValidateFile(pImage,iMappingLength,&mpginfo,out,szFileName,false,-1);
+
+	if(CrossAPI_GetFullPathName(szFileName,(char *)pcBuffer,CROSSAPI_MAX_PATH+1)) PrintReport(out,pcBuffer,&mpginfo);
+	else PrintReport(out,szFileName,&mpginfo);
+
+	if(FixErrors&&mpginfo.iErrors) {
+		hData=CrossAPI_GetTempFileAndName(CROSSAPI_MAX_PATH,pcBuffer);
+		if(hData==-1) {
+			cerr<<"Cannot open temporary file\n";
+			CrossAPI_UnmapFile(pImage);
+			log_out.close();
+			return 0;
+		}
+
+		cout<<"Rebuilding file \""<<szFileName<<"\"...\n";
+
+		ValidateFile(pImage,iMappingLength,&mpginfo,NULL,NULL,true,(int)hData);
+
+		CrossAPI_CloseFile(hData);
+	}
+
+	CrossAPI_UnmapFile(pImage);
+
+	if(FixErrors&&mpginfo.iErrors) {
+		strcpy((char *)pcBuffer2,szFileName);
+		strcat((char *)pcBuffer2,".bak");
+		if(!CrossAPI_MoveFile((char *)pcBuffer2,szFileName)) {
+			cerr<<"Error renaming \""<<szFileName<<"\"\n";
+			CrossAPI_UnmapFile(pImage);
+			log_out.close();
+			return 0;
+		}
+		if(!CrossAPI_MoveFile(szFileName,pcBuffer)) {
+			cerr<<"Error renaming temporary file\n";
+			CrossAPI_UnmapFile(pImage);
+			log_out.close();
+			return 0;
+		}
+
+	}
+
+	if(FixErrors&&mpginfo.iErrors) {
+		if(CrossAPI_GetFullPathName(szFileName,(char *)pcBuffer,CROSSAPI_MAX_PATH+1)) PrintMessage(out,"FIXED",pcBuffer,"File was rebuilt",-1);
+		else PrintMessage(out,"FIXED",szFileName,"File was rebuilt",-1);
+	}
+
+	if(szLogFileName) log_out.close();
+
+	cout<<"Done!\n";
+	
+	return 0;
+}
+
 
 int SplitFileName(char *szFileNameIn,char **szPathOut,char **szFileNameOut) {
 	int i;
