@@ -63,14 +63,15 @@ int main(int argc, char *argv[]) {
 	}
 
 	if(help) {
-		cerr<<"MP3val - a program for MPEG audio stream validation\n";
-		cerr<<"Version 0.1.2+ (not for public release)\n";
+		cerr<<"MP3val - a program for MPEG audio stream validation.\n";
+		cerr<<"Version 0.1.3.\n\n";
 		cerr<<"Usage: "<<argv[0]<<" <files to validate> [options]\n\n";
 		cerr<<"Options:\n\n";
-		cerr<<"\t-f                    try to fix errors\n";
-		cerr<<"\t-l<file name>         write log to the specified file (default: stdout)\n";
-		cerr<<"\t-si                   suppress INFO messages\n";
-		cerr<<"\t-p                    pipe mode (receive input file names from stdin)\n";
+		cerr<<"\t-f                try to fix errors\n";
+		cerr<<"\t-l<file name>     write log to the specified file (default: stdout)\n";
+		cerr<<"\t-si               suppress INFO messages\n";
+		cerr<<"\t-p                pipe mode (receive input file names from stdin)\n";
+		cerr<<"\t-v                print version number and exit\n";
 		cerr<<"\n";
 		cerr<<"Wildcards are allowed.\n\n";
 		cerr<<"(c) ring0, jetsys, 2005-2006.\n";
@@ -91,6 +92,10 @@ int main(int argc, char *argv[]) {
 		}
 		else if(!strcmp(argv[i],"-p")) {
 			bPipeMode=true;
+		}
+		else if(!strcmp(argv[i],"-v")) {
+			cout<<"MP3val 0.1.3\n";
+			return 0;
 		}
 		else {
 			cerr<<"Wrong parameter \""<<argv[i]<<"\"\n";
