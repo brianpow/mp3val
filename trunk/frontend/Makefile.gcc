@@ -1,8 +1,10 @@
-mp3valGUI.exe: main.o resource.o
-	g++ -mwindows main.o resource.o -lcomctl32 -o mp3valGUI.exe
+mp3valGUI.exe: main.o commands.o resource.o
+	g++ -mwindows main.o commands.o resource.o -lcomctl32 -o mp3valGUI.exe
 	strip mp3valGUI.exe
-main.o: main.cpp resource.h
+main.o: main.cpp resource.h commands.h
 	g++ -c main.cpp -o main.o
+commands.o: commands.cpp commands.h
+	g++ -c commands.cpp -o commands.o
 resource.o: main.rc resource.h
 	windres main.rc -o resource.o
 clean:

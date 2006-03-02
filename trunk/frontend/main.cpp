@@ -19,15 +19,21 @@
 
 #include <windows.h>
 #include <commctrl.h>
+#include <cstdio>
 
+#include "commands.h"
 #include "resource.h"
+
+HWND hWnd,hListView,hEdit;
+
+int InitListView();
+int ArrangeWindows();
 
 LRESULT CALLBACK WndProc(HWND,UINT,WPARAM,LPARAM);
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine, int iCmdShow) {
 	char szAppName[]="MP3ValGUI";
 	char szMainWindowCaption[]="MP3valGUI 0.0.0+ (not for publiñ release)";
-	HWND hWnd;
 	MSG msg;
 	WNDCLASS wndclass;
 	BOOL msgstatus;
@@ -75,20 +81,57 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine,
 }
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
-	RECT clientrect;
-	HWND hListView;
-	HWND hEdit;
+	HDC hDC;
+	PAINTSTRUCT ps;
+	char str[256];
 	
 	switch(message) {
 	case WM_CREATE:
-		GetClientRect(hWnd,&clientrect);
-		hListView=CreateWindow(WC_LISTVIEW,"",WS_CHILD|WS_VISIBLE|LVS_LIST,4,4,clientrect.right-clientrect.left-8,clientrect.bottom-clientrect.top-104,hWnd,NULL,GetModuleHandle(NULL),NULL);
-		hEdit=CreateWindow(WC_EDIT,"",WS_VISIBLE|WS_CHILD|ES_MULTILINE|ES_AUTOHSCROLL|ES_AUTOVSCROLL,4,clientrect.bottom-96,clientrect.right-clientrect.left-8,92,hWnd,NULL,GetModuleHandle(NULL),NULL);
+		hListView=CreateWindow(WC_LISTVIEW,"",WS_CHILD|WS_VISIBLE|LVS_REPORT|WS_BORDER|WS_VSCROLL|WS_HSCROLL,0,0,10,10,hWnd,NULL,GetModuleHandle(NULL),NULL);
+		hEdit=CreateWindow(WC_EDIT,"",WS_CHILD|WS_VISIBLE|WS_BORDER|ES_LEFT|ES_MULTILINE|ES_AUTOHSCROLL|ES_AUTOVSCROLL|ES_READONLY|WS_VSCROLL,0,0,100,100,hWnd,NULL,GetModuleHandle(NULL),NULL);
+		ArrangeWindows();
+		InitListView();
+		InitCommands();
+		return 0;
+	case WM_PAINT:
+		hDC=BeginPaint(hWnd,&ps);
+		EndPaint(hWnd,&ps);
+		return 0;
+	case WM_SIZE:
+		ArrangeWindows();
 		return 0;
 	case WM_COMMAND:
+		switch(LOWORD(wParam)) {
+		case IDM_FILE_ADDFILE:
+			DoFileAddFile();
+			break;
+		case IDM_FILE_ADDDIR:
+			DoFileAddDir();
+			break;
+		case IDM_FILE_QUIT:
+			DoFileQuit();
+			break;
+		
+		case IDM_ACTIONS_SCANALL:
+			DoActionsScanAll();
+			break;
+		case IDM_ACTIONS_SCANSEL:
+			DoActionsScanSel();
+			break;
+		case IDM_ACTIONS_FIXSEL:
+			DoActionsFixSel();
+			break;
+		case IDM_ACTIONS_OPTIONS:
+			DoActionsOptions();
+			break;
+		
+		case IDM_HELP_ABOUT:
+			DoHelpAbout();
+			break;
+		}
 		return 0;
 	case WM_CLOSE:
-		DestroyWindow(hWnd);
+		DoFileQuit();
 		return 0;
 	case WM_DESTROY:
 		PostQuitMessage(0);
@@ -96,4 +139,43 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
 	}
 	
 	return DefWindowProc(hWnd,message,wParam,lParam);
+}
+
+int ArrangeWindows() {
+	RECT r;
+	int w,h;
+	
+	GetClientRect(hWnd,&r);
+	
+	w=r.right;
+	h=r.bottom;
+
+	MoveWindow(hListView,4,4,w-8-200,h-12-100,TRUE);
+	MoveWindow(hEdit,4,h-4-92,w-8,92,TRUE);
+	
+	return 0;
+}
+
+int InitListView() {
+	LV_COLUMN col;
+	char szFileHeading[]="File";
+	char szStateHeading[]="State";
+	
+	col.mask=LVCF_FMT|LVCF_SUBITEM|LVCF_TEXT|LVCF_WIDTH;
+	
+	col.fmt=LVCFMT_LEFT;
+	col.cx=300;
+	col.pszText=szFileHeading;
+	col.iSubItem=0;
+	
+	SendMessage(hListView,LVM_INSERTCOLUMN,0,(LPARAM)&col);
+	
+	col.fmt=LVCFMT_LEFT;
+	col.cx=200;
+	col.pszText=szStateHeading;
+	col.iSubItem=1;
+	
+	SendMessage(hListView,LVM_INSERTCOLUMN,1,(LPARAM)&col);
+	
+	return 0;
 }
