@@ -6,7 +6,34 @@
 extern HWND hWnd,hListView,hEdit;
 node root;
 
+char szOpenFileName[OPENFILENAME_BUFSIZE];
+OPENFILENAME ofn;
+
+int AddMultipleFiles
+
 int InitCommands() {
+	memset(szOpenFileName,'\0',OPENFILENAME_BUFSIZE);
+	
+	ofn.lStructSize=sizeof(OPENFILENAME);
+	ofn.hwndOwner=hWnd;
+	ofn.hInstance=NULL;
+	ofn.lpstrFilter="MP3 files (*.mp3)\0*.mp3\0MP2 files (*.mp2)\0*.mp2\0MP1 files (*.mp1)\0*.mp1\0All MPEG audio files (*.mp3,*.mp2,*.mp1)\0*.mp3;*.mp2;*.mp1\0All files (*.*)\0*.*\0\0";
+	ofn.lpstrCustomFilter=NULL;
+	ofn.nMaxCustFilter=0;
+	ofn.nFilterIndex=1;
+	ofn.lpstrFile=(char *)szOpenFileName;
+	ofn.nMaxFile=OPENFILENAME_BUFSIZE;
+	ofn.lpstrFileTitle=NULL;
+	ofn.nMaxFileTitle=0;
+	ofn.lpstrInitialDir=NULL;
+	ofn.lpstrTitle="Select file(s) for validation";
+	ofn.Flags=OFN_ALLOWMULTISELECT|OFN_EXPLORER|OFN_FILEMUSTEXIST;
+	ofn.nFileOffset=0;
+	ofn.nFileExtension=0;
+	ofn.lCustData=0;
+	ofn.lpfnHook=NULL;
+	ofn.lpTemplateName=NULL;
+	
 	return 0;
 }
 
@@ -15,6 +42,17 @@ int RefreshView(int iViewType) {
 }
 
 int DoFileAddFile() {
+	DWORD dwAttr;
+	
+	if(!GetOpenFileName(&ofn)) return 1;
+	MessageBox(hWnd,ofn.lpstrFile,"ofn.lpstrFile",MB_OK);
+	dwAttr=GetFileAttributes(ofn.lpstrFile);
+	if(dwAttr&FILE_ATTRIBUTE_DIRECTORY) {
+		MessageBox(hWnd,"Multiple files selected","Info",MB_OK);
+	}
+	else {
+		MessageBox(hWnd,"Single file selected","Info",MB_OK);
+	}
 	return 0;
 }
 

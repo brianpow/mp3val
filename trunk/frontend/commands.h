@@ -1,6 +1,8 @@
 #ifndef __COMMANDS_H__
 #define __COMMANDS_H__
 
+#define OPENFILENAME_BUFSIZE 65536
+
 #define ST_NOT_SCANNED 0
 #define ST_NORMAL 1
 
