@@ -9,8 +9,6 @@ node root;
 char szOpenFileName[OPENFILENAME_BUFSIZE];
 OPENFILENAME ofn;
 
-int AddMultipleFiles
-
 int InitCommands() {
 	memset(szOpenFileName,'\0',OPENFILENAME_BUFSIZE);
 	

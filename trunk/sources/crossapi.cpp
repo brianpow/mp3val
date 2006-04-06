@@ -293,7 +293,7 @@ void *CrossAPI_MapFile(char *filename) {
 	dPages=iMappingLength/getpagesize();
 	iRoundedMappingLength=((int)ceil(dPages)+1)*getpagesize();
 
-	pImage=mmap(NULL,iRoundedMappingLength,PROT_READ,0,hFile,0);
+	pImage=mmap(NULL,iRoundedMappingLength,PROT_READ,MAP_SHARED,hFile,0);
 	
 	if(pImage==MAP_FAILED) return NULL;
 

@@ -410,7 +410,8 @@ int MPEGResync(unsigned char *baseptr,int index,int iFileSize,int frames) {
 	int iMPEGVersion=0,iMPEGLayer=0;
 	
 	do {
-		if(iFileSize-(p-baseptr)-3>0) p=(unsigned char *)memchr(p,'\xFF',iFileSize-(p-baseptr)-3);
+		if(iFileSize-(p-baseptr)-3<=0) return -1;
+		p=(unsigned char *)memchr(p,'\xFF',iFileSize-(p-baseptr)-3);
 		if(!p) break;
 		if((p[1]&0xE0)!=0xE0) {
 			p++;
