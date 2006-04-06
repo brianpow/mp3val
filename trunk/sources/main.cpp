@@ -109,6 +109,7 @@ int main(int argc, char *argv[]) {
 		i=0;
 		for(;;) {
 			if(i>CROSSAPI_MAX_PATH) i=0;
+			if(cin.eof()) break;
 			cin.get(ch);
 			if(!ch) break;
 			if(ch==0x0D||ch==0x0A) {
