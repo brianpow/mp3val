@@ -6,8 +6,6 @@
 
 #include <cstring>
 
-using namespace std;
-
 #include <windows.h>
 
 struct FileInfo {
@@ -36,7 +34,7 @@ struct CFileNode {
 	CFileNode(char *name,int st,bool isdir) {
 		strcpy(szNodeName,name);
 		state=st;
-		count=1;
+		count=0;
 		next=NULL;
 		child=NULL;
 		IsDir=isdir;

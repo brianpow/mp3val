@@ -1,11 +1,6 @@
 #include "listman.h"
 #include <cstring>
 
-using namespace std;
-//!!!!!!!!!!!!!!!!!!!!!!!!
-#include <windows.h>
-//!!!!!!!!!!!!!!!!!!!!!!!!
-
 //Private functions
 
 int CFileList::cleanup_recursive(CFileNode *node) {
@@ -38,8 +33,7 @@ int CFileList::addfile(char *szFileName) {
 	CFileNode *temp;
 	bool IsDir;
 	
-	for(p=szFileName;(*p&&p);p=strchr(p,'\\')+1) {
-		MessageBox(NULL,p,"p is",MB_OK);
+	for(p=szFileName;p>(char *)0x01;p=strchr(p,'\\')+1) {
 		strcpy(part,p);
 		p2=strchr(part,'\\');
 		if(p2) {
@@ -51,12 +45,39 @@ int CFileList::addfile(char *szFileName) {
 		temp=current->search(part);
 		if(!temp) temp=current->addnode(part,ST_NOT_SCANNED,IsDir);
 		temp->count++;
-		MessageBox(NULL,temp->szNodeName,"temp->szNodeName",MB_OK);
 		
 		current=temp;
 	}
 	
-	MessageBox(NULL,"File added",NULL,MB_OK);
-	
+	return 0;
+}
+
+int CFileList::getfileno(int n,FileInfo *fi) {
+	CFileNode *current=root.child;
+	int cn=0;
+	char szConstructedName[MAX_PATH+1];
+
+	szConstructedName[0]='\0';
+
+	for(;current;) {
+		if(cn==n&&!current->child) {
+			strcat(szConstructedName,current->szNodeName);
+			strcpy(fi->szFileName,szConstructedName);
+			fi->state=current->state;
+			fi->IsDir=current->IsDir;
+			return 1;
+		}
+
+		if(!current->next||(current->next->count+cn>n)) {
+			strcat(szConstructedName,current->szNodeName);
+			strcat(szConstructedName,"\\");
+			current=current->child;
+		}
+		else {
+			cn+=current->count;
+			current=current->next;
+		}
+	}
+
 	return 0;
 }

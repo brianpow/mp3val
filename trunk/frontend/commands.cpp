@@ -37,6 +37,21 @@ int InitCommands() {
 }
 
 int RefreshView(int iViewType) {
+	LVITEM lvItem;
+	FileInfo fi;
+	int i;
+	int res;
+
+	SendMessage(hListView,LVM_DELETEALLITEMS,0,0);
+
+	for(i=0;;i++) {
+		if(!list.getfileno(i,&fi)) break;
+		lvItem.mask=LVIF_TEXT;
+		lvItem.iItem=i;
+		lvItem.iSubItem=0;
+		lvItem.pszText=fi.szFileName;
+		SendMessage(hListView,LVM_INSERTITEM,0,(LPARAM)&lvItem);
+	}
 	return 0;
 }
 
@@ -44,15 +59,18 @@ int DoFileAddFile() {
 	DWORD dwAttr;
 	
 	if(!GetOpenFileName(&ofn)) return 1;
-	MessageBox(hWnd,ofn.lpstrFile,"ofn.lpstrFile",MB_OK);
+//	MessageBox(hWnd,ofn.lpstrFile,"ofn.lpstrFile",MB_OK);
 	dwAttr=GetFileAttributes(ofn.lpstrFile);
 	if(dwAttr&FILE_ATTRIBUTE_DIRECTORY) {
-		MessageBox(hWnd,"Multiple files selected","Info",MB_OK);
+//		MessageBox(hWnd,"Multiple files selected","Info",MB_OK);
 	}
 	else {
-		MessageBox(hWnd,"Single file selected. Adding...","Info",MB_OK);
+//		MessageBox(hWnd,"Single file selected. Adding...","Info",MB_OK);
 		list.addfile(ofn.lpstrFile);
 	}
+
+	RefreshView(0);
+
 	return 0;
 }
 
