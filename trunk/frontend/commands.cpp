@@ -2,9 +2,10 @@
 #include <commctrl.h>
 
 #include "commands.h"
+#include "listman.h"
 
 extern HWND hWnd,hListView,hEdit;
-node root;
+CFileList list;
 
 char szOpenFileName[OPENFILENAME_BUFSIZE];
 OPENFILENAME ofn;
@@ -49,7 +50,8 @@ int DoFileAddFile() {
 		MessageBox(hWnd,"Multiple files selected","Info",MB_OK);
 	}
 	else {
-		MessageBox(hWnd,"Single file selected","Info",MB_OK);
+		MessageBox(hWnd,"Single file selected. Adding...","Info",MB_OK);
+		list.addfile(ofn.lpstrFile);
 	}
 	return 0;
 }

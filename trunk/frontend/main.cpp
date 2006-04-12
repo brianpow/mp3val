@@ -1,6 +1,6 @@
 /*
  * MP3valGUI - a frontend for MP3val program
- * Copyright (C) 2005-2006 Alexey Kuznetsov (ring0) and Eugen Tikhonov (jetsys)
+ * Copyright (C) 2005-2006 Alexey Kuznetsov (ring0)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
