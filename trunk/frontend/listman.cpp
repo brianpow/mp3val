@@ -21,7 +21,7 @@ int CFileList::cleanup_recursive(CFileNode *node) {
 //Public functions
 
 int CFileList::cleanup() {
-	if(root.next) cleanup_recursive(root.next);
+	if(root.next) cleanup_recursive(&root);
 	return 0;
 }
 
@@ -32,6 +32,7 @@ int CFileList::addfile(char *szFileName) {
 	CFileNode *current=&root;
 	CFileNode *temp;
 	bool IsDir;
+	bool added=false;
 	
 	for(p=szFileName;p>(char *)0x01;p=strchr(p,'\\')+1) {
 		strcpy(part,p);
@@ -43,10 +44,18 @@ int CFileList::addfile(char *szFileName) {
 		else IsDir=false;
 		
 		temp=current->search(part);
-		if(!temp) temp=current->addnode(part,ST_NOT_SCANNED,IsDir);
+		if(!temp) {
+			temp=current->addnode(part,ST_NOT_SCANNED,IsDir);
+			added=true;
+		}
 		temp->count++;
 		
 		current=temp;
+	}
+	
+	if(!added) {
+//This file has already been in the list
+		for(;current!=&root;current=current->parent) current->count--;
 	}
 	
 	return 0;

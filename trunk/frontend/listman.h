@@ -20,6 +20,7 @@ struct CFileNode {
 	int count;
 	CFileNode *next;
 	CFileNode *child;
+	CFileNode *parent;
 	bool IsDir;
 	
 	CFileNode() {
@@ -28,15 +29,17 @@ struct CFileNode {
 		count=0;
 		next=NULL;
 		child=NULL;
+		parent=NULL;
 		IsDir=false;
 	}
 	
-	CFileNode(char *name,int st,bool isdir) {
+	CFileNode(char *name,int st,bool isdir,CFileNode *par) {
 		strcpy(szNodeName,name);
 		state=st;
 		count=0;
 		next=NULL;
 		child=NULL;
+		parent=par;
 		IsDir=isdir;
 	}
 	
@@ -51,11 +54,11 @@ struct CFileNode {
 	CFileNode *addnode(char *name,int st, bool isdir) {
 		CFileNode *current;
 		if(!this->child) {
-			this->child=new CFileNode(name,st,isdir);
+			this->child=new CFileNode(name,st,isdir,this);
 			return this->child;
 		}
 		for(current=this->child;current->next;current=current->next);
-		current->next=new CFileNode(name,st,isdir);
+		current->next=new CFileNode(name,st,isdir,this);
 		return current->next;
 	}
 };
