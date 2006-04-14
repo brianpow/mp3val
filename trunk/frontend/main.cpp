@@ -86,7 +86,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
 	HDC hDC;
 	PAINTSTRUCT ps;
 	LPNMHDR pnmhdr;
-	char str[256];
 	
 	switch(message) {
 	case WM_CREATE:

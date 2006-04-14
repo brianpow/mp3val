@@ -44,7 +44,6 @@ int RefreshView(int iViewType) {
 	LVITEM lvItem;
 	FileInfo fi;
 	int i;
-	int res;
 
 	SendMessage(hListView,LVM_DELETEALLITEMS,0,0);
 
@@ -61,15 +60,23 @@ int RefreshView(int iViewType) {
 
 int DoFileAddFile() {
 	DWORD dwAttr;
+	char filename[MAX_PATH+1];
+	char dirname[MAX_PATH+1];
+	char *p;
 	
 	if(!GetOpenFileName(&ofn)) return 1;
-//	MessageBox(hWnd,ofn.lpstrFile,"ofn.lpstrFile",MB_OK);
 	dwAttr=GetFileAttributes(ofn.lpstrFile);
 	if(dwAttr&FILE_ATTRIBUTE_DIRECTORY) {
-//		MessageBox(hWnd,"Multiple files selected","Info",MB_OK);
+		strcpy(dirname,ofn.lpstrFile);
+		strcat(dirname,"\\");
+		p=ofn.lpstrFile;
+		for(p=p+strlen(p)+1;*p;p=p+strlen(p)+1) {
+			strcpy(filename,dirname);
+			strcat(filename,p);
+			list.addfile(filename);
+		}
 	}
 	else {
-//		MessageBox(hWnd,"Single file selected. Adding...","Info",MB_OK);
 		list.addfile(ofn.lpstrFile);
 	}
 
@@ -89,11 +96,13 @@ int DoFileQuit() {
 
 int DoActionsRemove() {
 	int i=-1;
+	int cor=0;
 
 	for(;;) {
 		i=SendMessage(hListView,LVM_GETNEXTITEM,(WPARAM)i,(LPARAM)MAKELPARAM(LVNI_SELECTED,0));
 		if(i==-1) break;
-		list.deletefileno(iViewMode,i);
+		list.deletefileno(iViewMode,i-cor);
+		cor++;
 	}
 	RefreshView(iViewMode);
 	return 0;

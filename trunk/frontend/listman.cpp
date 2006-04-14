@@ -37,7 +37,7 @@ int CFileList::getfileno_internal(int viewmode,int n,FileInfo *fi,CFileNode **fn
 			return 1;
 		}
 
-		if(!current->next||(current->next->count.get(viewmode)+cn>n)) {
+		if(!current->next||(current->count.get(viewmode)+cn>n)) {
 			strcat(szConstructedName,current->szNodeName);
 			strcat(szConstructedName,"\\");
 			current=current->child;

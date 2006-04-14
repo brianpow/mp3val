@@ -104,6 +104,8 @@ struct CFileNode {
 			current->next=next;
 		}
 		delete this;
+
+		return 0;
 	}
 };
 
