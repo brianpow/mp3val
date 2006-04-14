@@ -18,6 +18,39 @@ int CFileList::cleanup_recursive(CFileNode *node) {
 	return 0;
 }
 
+int CFileList::getfileno_internal(int viewmode,int n,FileInfo *fi,CFileNode **fn) {
+	CFileNode *current=root.child;
+	int cn=0;
+	char szConstructedName[MAX_PATH+1];
+
+	szConstructedName[0]='\0';
+
+	for(;current;) {
+		if(cn==n&&!current->child) {
+			if(fn) *fn=current;
+			if(fi) {
+				strcat(szConstructedName,current->szNodeName);
+				strcpy(fi->szFileName,szConstructedName);
+				fi->state=current->state;
+				fi->IsDir=current->IsDir;
+			}
+			return 1;
+		}
+
+		if(!current->next||(current->next->count.get(viewmode)+cn>n)) {
+			strcat(szConstructedName,current->szNodeName);
+			strcat(szConstructedName,"\\");
+			current=current->child;
+		}
+		else {
+			cn+=current->count.get(viewmode);
+			current=current->next;
+		}
+	}
+
+	return 0;
+}
+
 //Public functions
 
 int CFileList::cleanup() {
@@ -48,45 +81,39 @@ int CFileList::addfile(char *szFileName) {
 			temp=current->addnode(part,ST_NOT_SCANNED,IsDir);
 			added=true;
 		}
-		temp->count++;
+		temp->count.inc(VM_NOT_SCANNED);
 		
 		current=temp;
 	}
 	
 	if(!added) {
 //This file has already been in the list
-		for(;current!=&root;current=current->parent) current->count--;
+		for(;current!=&root;current=current->parent) current->count.dec(VM_NOT_SCANNED);
 	}
 	
 	return 0;
 }
 
-int CFileList::getfileno(int n,FileInfo *fi) {
-	CFileNode *current=root.child;
-	int cn=0;
-	char szConstructedName[MAX_PATH+1];
+int CFileList::getfileno(int viewmode,int n,FileInfo *fi) {
+	return getfileno_internal(viewmode,n,fi,NULL);
+}
 
-	szConstructedName[0]='\0';
-
-	for(;current;) {
-		if(cn==n&&!current->child) {
-			strcat(szConstructedName,current->szNodeName);
-			strcpy(fi->szFileName,szConstructedName);
-			fi->state=current->state;
-			fi->IsDir=current->IsDir;
-			return 1;
-		}
-
-		if(!current->next||(current->next->count+cn>n)) {
-			strcat(szConstructedName,current->szNodeName);
-			strcat(szConstructedName,"\\");
-			current=current->child;
-		}
-		else {
-			cn+=current->count;
-			current=current->next;
-		}
+int CFileList::deletefileno(int viewmode,int n) {
+	CFileNode *current,*temp;
+	int file_view_type;
+	
+	getfileno_internal(viewmode,n,NULL,&current);
+	if(current->state==ST_NOT_SCANNED) file_view_type=VM_NOT_SCANNED;
+	else if(current->state==ST_NORMAL) file_view_type=VM_NORMAL;
+	else file_view_type=VM_PROBLEMS;
+	
+	for(;current!=&root;current=temp) {
+		temp=current->parent;
+		current->delnode();
+		if(temp->child) break;
 	}
-
+	
+	for(current=temp;current!=&root;current=current->parent) current->count.dec(file_view_type);
+	
 	return 0;
 }

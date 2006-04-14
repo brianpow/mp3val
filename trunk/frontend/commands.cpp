@@ -1,3 +1,5 @@
+#include "base.h"
+
 #include <windows.h>
 #include <commctrl.h>
 
@@ -9,6 +11,8 @@ CFileList list;
 
 char szOpenFileName[OPENFILENAME_BUFSIZE];
 OPENFILENAME ofn;
+
+int iViewMode=VM_EVERYTHING;
 
 int InitCommands() {
 	memset(szOpenFileName,'\0',OPENFILENAME_BUFSIZE);
@@ -45,7 +49,7 @@ int RefreshView(int iViewType) {
 	SendMessage(hListView,LVM_DELETEALLITEMS,0,0);
 
 	for(i=0;;i++) {
-		if(!list.getfileno(i,&fi)) break;
+		if(!list.getfileno(VM_EVERYTHING,i,&fi)) break;
 		lvItem.mask=LVIF_TEXT;
 		lvItem.iItem=i;
 		lvItem.iSubItem=0;
@@ -69,7 +73,7 @@ int DoFileAddFile() {
 		list.addfile(ofn.lpstrFile);
 	}
 
-	RefreshView(0);
+	RefreshView(iViewMode);
 
 	return 0;
 }
@@ -80,6 +84,18 @@ int DoFileAddDir() {
 
 int DoFileQuit() {
 	DestroyWindow(hWnd);
+	return 0;
+}
+
+int DoActionsRemove() {
+	int i=-1;
+
+	for(;;) {
+		i=SendMessage(hListView,LVM_GETNEXTITEM,(WPARAM)i,(LPARAM)MAKELPARAM(LVNI_SELECTED,0));
+		if(i==-1) break;
+		list.deletefileno(iViewMode,i);
+	}
+	RefreshView(iViewMode);
 	return 0;
 }
 
@@ -101,5 +117,10 @@ int DoActionsOptions() {
 
 int DoHelpAbout() {
 	MessageBox(hWnd,"MP3valGUI 0.0.0+ (not for public release), (c) ring0, 2006","About MP3valGUI",MB_OK|MB_ICONINFORMATION);
+	return 0;
+}
+
+int HandleListViewRClick(LPNMITEMACTIVATE pnmact){
+	
 	return 0;
 }

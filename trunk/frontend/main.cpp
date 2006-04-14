@@ -17,6 +17,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#include "base.h"
+
 #include <windows.h>
 #include <commctrl.h>
 #include <cstdio>
@@ -83,6 +85,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine,
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
 	HDC hDC;
 	PAINTSTRUCT ps;
+	LPNMHDR pnmhdr;
+	char str[256];
 	
 	switch(message) {
 	case WM_CREATE:
@@ -107,10 +111,15 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
 		case IDM_FILE_ADDDIR:
 			DoFileAddDir();
 			break;
+		case IDM_FILE_OPTIONS:
+			DoActionsOptions();
+			break;
 		case IDM_FILE_QUIT:
 			DoFileQuit();
 			break;
 		
+		case IDM_ACTIONS_REMOVE:
+			DoActionsRemove();
 		case IDM_ACTIONS_SCANALL:
 			DoActionsScanAll();
 			break;
@@ -120,13 +129,20 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
 		case IDM_ACTIONS_FIXSEL:
 			DoActionsFixSel();
 			break;
-		case IDM_ACTIONS_OPTIONS:
-			DoActionsOptions();
-			break;
 		
 		case IDM_HELP_ABOUT:
 			DoHelpAbout();
 			break;
+		}
+		return 0;
+	case WM_NOTIFY:
+		pnmhdr=(LPNMHDR)lParam;
+		if(pnmhdr->hwndFrom==hListView) {
+			switch(pnmhdr->code) {
+			case NM_RCLICK:
+				HandleListViewRClick((LPNMITEMACTIVATE)pnmhdr);
+				return 0;
+			}
 		}
 		return 0;
 	case WM_CLOSE:
