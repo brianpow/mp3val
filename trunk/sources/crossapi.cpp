@@ -185,7 +185,7 @@ int CrossAPI_FindClose(int iHandle) {
 
 int CrossAPI_GetFullPathName(char *szFileName,char *pcBuffer,int iBufSize) {
 	if(iBufSize<CROSSAPI_MAX_PATH) return 0;
-	return (int)realpath(szFileName,pcBuffer);
+	return realpath(szFileName,pcBuffer) != 0;
 }
 
 int CrossAPI_GetTempFileAndName(int iBufSize,char *pcBuffer) {
