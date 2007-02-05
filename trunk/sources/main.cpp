@@ -1,6 +1,6 @@
 /*
  * MP3val - a program for MPEG audio file validation
- * Copyright (C) 2005-2006 Alexey Kuznetsov (ring0) and Eugen Tikhonov (jetsys)
+ * Copyright (C) 2005-2007 Alexey Kuznetsov (ring0) and Eugen Tikhonov (jetsys)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -74,7 +74,7 @@ int main(int argc, char *argv[]) {
 		cerr<<"\t-v                print version number and exit\n";
 		cerr<<"\n";
 		cerr<<"Wildcards are allowed.\n\n";
-		cerr<<"(c) ring0, jetsys, 2005-2006.\n";
+		cerr<<"(c) ring0, jetsys, 2005-2007.\n";
 		cerr<<"This program is released under GPL, see the attached file for details.\n";
 		return 0;
 	}
