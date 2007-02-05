@@ -338,6 +338,9 @@ int ValidateMPEGFrame(unsigned char *baseptr,int index, MPEGINFO *mpginfo) {
 		mpginfo->mpeg_stream_error=index;
 		return -1;
 	}
+	
+	if(mpginfo->iLastBitrate>0&&mpginfo->iLastBitrate!=mpeg_bitrate) mpginfo->bVariableBitrate=true;
+	mpginfo->iLastBitrate=mpeg_bitrate;
 
 //Determine sampling rate
 	switch((baseptr[index+2]>>2)&0x03) {

@@ -1,10 +1,10 @@
 <html>
 <head>
 	<meta http-equiv="Content-type" content="text/html; charset=ISO-8859-1">
-	<title>MP3val 0.1.4: Documentation</title>
+	<title>MP3val 0.1.4+: Documentation</title>
 </head>
 <body>
-	<p><h2>MP3val 0.1.4: Documentation</h2>
+	<p><h2>MP3val 0.1.4+: Documentation</h2>
 	<p>
 		<ol>
 			<li><a href="#intro">Introduction</a>
@@ -28,7 +28,7 @@
 	<p>The latest version of MP3val (including sources) can be downloaded from the <a href="http://mp3val.sourceforge.net">official home page</a>.
 
 	<p><a name="#why"><h3>2. Why to use it?</h3>
-	<p>MPEG is a streamable format, that is, it is optimized for quick and easy recovery from errors. Modern MP3 decoders are very tolerant to inconsistencies in the input file. Most players even don't report to user about stream errors. So, as a rule, user doesn't know whether his files are valid or broken. But using broken files can eventually lead to problems during playback on certain software/hardware.
+	<p>MPEG is a streamable format, that is, it is optimized for quick and easy recovery from errors. MP3 decoders are very tolerant to inconsistencies in the input file. Most players even don't report to user about stream errors. So, as a rule, user doesn't know whether his files are valid or broken. But using broken files can eventually lead to problems during playback on certain software/hardware.
 	<p>MP3val can assure you that your files are consistent in the terms of MPEG frames, that is,  it ensures that the file can be easily split into the frames and doesn't contain garbage. It checks also some other issues, such as track length stored in the VBR header. Checking by MP3val isn't a full test for compliance with existing formal and informal standards. MP3val neither decodes audio data nor checks for data validity in the frame.
 	<p>MP3val can also fix most of the problems. Be careful: although MP3val can repair even files with MPEG stream errors, it is recommended that you find a "good" copy of this file, because a "click" sound usually can't be removed, the repaired file will only look like good.
 
@@ -74,6 +74,10 @@
 				<td><b>Fixable?</b>
 				<td><b>Comments</b>
 			<tr>
+				<td><i>Too few MPEG frames (it's unlikely that this is a MPEG audio file)</i>
+				<td align=center>-
+				<td>Probably this is not a MPEG audio file, but MP3val has detected a couple of MPEG frames in it. Most likely this is a false positive.
+			<tr>
 				<td><i>Garbage at the beginning of the file</i>
 				<td align=center>+
 				<td>There are some unknown data at the beginning of the file (before the first MPEG frame). It can be an unsupported tag with metadata, but in most cases it is only garbage. "Fixing" means here a removal of these data.
@@ -109,6 +113,10 @@
 				<td><i>Wrong number of MPEG data bytes specified in VBRI header</i>
 				<td align=center>+
 				<td>Like with Xing header. VBRI is the other way to store VBR information in the first MPEG frame, but it seems to be used much more rarely.
+			<tr>
+				<td><i>VBR detected, but no VBR header is present. Seeking may not work properly</i>
+				<td align=center>-
+				<td>Files encoded with VBR should have a VBR header (either Xing or VBRI), otherwise seeking can be broken. This will be fixable in the future versions.
 			<tr>
 				<td><i>Non-layer-III frame encountered</i>
 				<td align=center>-

@@ -56,6 +56,8 @@ struct MPEGINFO {
 
 //Misc data
 	bool LastFrameStereo;
+	bool bVariableBitrate;
+	int iLastBitrate;
 	int iLastMPEGLayer;
 	int iLastMPEGVersion;
 	int iTotalMPEGBytes;
@@ -95,6 +97,8 @@ struct MPEGINFO {
 		garbage_at_the_end=-1;
 		
 		LastFrameStereo=false;
+		bVariableBitrate=false;
+		iLastBitrate=-2;
 		iLastMPEGLayer=0;
 		iLastMPEGVersion=0;
 		

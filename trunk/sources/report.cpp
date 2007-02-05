@@ -33,23 +33,6 @@ int PrintReport(ostream *out,char *filename,MPEGINFO *mpginfo) {
 	int tags_total;
 	char szMsgBuf[256];
 	
-//Errors
-	if(mpginfo->unknown_format>=0) {
-		PrintMessage(out,"ERROR",filename,"Unknown file format",-1);
-		return 0;
-	}
-
-//Warnings
-	if(mpginfo->riff>=0) {
-		PrintMessage(out,"WARNING",filename,"This is a RIFF file, not MPEG stream",-1);
-		mpginfo->iErrors++;
-	}
-
-	if(mpginfo->truncated>=0) {
-		PrintMessage(out,"WARNING",filename,"It seems that file is truncated or there is garbage at the end of the file",mpginfo->truncated);
-		mpginfo->iErrors++;
-	}
-	
 	mpeg_total=
 		mpginfo->mpeg1layer1+
 		mpginfo->mpeg1layer2+
@@ -60,6 +43,27 @@ int PrintReport(ostream *out,char *filename,MPEGINFO *mpginfo) {
 		mpginfo->mpeg25layer1+
 		mpginfo->mpeg25layer2+
 		mpginfo->mpeg25layer3;
+	
+//Errors
+	if(mpginfo->unknown_format>=0) {
+		PrintMessage(out,"ERROR",filename,"Unknown file format",-1);
+		return 0;
+	}
+
+//Warnings
+	if(mpeg_total<10) {
+		PrintMessage(out,"WARNING",filename,"Too few MPEG frames (it's unlikely that this is a MPEG audio file)",-1);
+	}
+	
+	if(mpginfo->riff>=0) {
+		PrintMessage(out,"WARNING",filename,"This is a RIFF file, not MPEG stream",-1);
+		mpginfo->iErrors++;
+	}
+
+	if(mpginfo->truncated>=0) {
+		PrintMessage(out,"WARNING",filename,"It seems that file is truncated or there is garbage at the end of the file",mpginfo->truncated);
+		mpginfo->iErrors++;
+	}
 	
 	if(mpginfo->VBRHeaderPresent) {
 		if(mpginfo->IsXingHeader) {
@@ -91,6 +95,10 @@ int PrintReport(ostream *out,char *filename,MPEGINFO *mpginfo) {
 				mpginfo->iErrors++;
 			}
 		}
+	}
+	
+	if(mpginfo->bVariableBitrate&&!mpginfo->VBRHeaderPresent) {
+		PrintMessage(out,"WARNING",filename,"VBR detected, but no VBR header is present. Seeking may not work properly.",-1);
 	}
 	
 	if(mpginfo->mpeg1layer1||
@@ -184,8 +192,11 @@ int PrintReport(ostream *out,char *filename,MPEGINFO *mpginfo) {
 		}
 	
 		(*out)<<", ";
-	
-		if(mpginfo->VBRHeaderPresent) {
+		
+		if(!mpginfo->bVariableBitrate) {
+			(*out)<<"CBR";
+		}
+		else if(mpginfo->VBRHeaderPresent) {
 			if(mpginfo->IsXingHeader) (*out)<<"Xing header";
 			else (*out)<<"VBRI header";
 		}
