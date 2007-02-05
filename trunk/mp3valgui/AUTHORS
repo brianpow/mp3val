@@ -1,0 +1,6 @@
+MP3valGUI was written by
+Erich Schubert <erich@debian.org>
+
+Credits go to Alexey Kuznetso and Eugen Tikhonov for the "mp3val" application
+that does the actual work and the Python/GTK/PyGTK/Glade folks for their
+great software toolkit to make UIs.
