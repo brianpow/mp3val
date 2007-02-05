@@ -1,0 +1,12 @@
+Version 0.1.1:
+- Added locate magic, which should especially help windows users
+- Added error dialogs if something goes wrong
+
+Version 0.1:
+- First released version
+
+TODO:
+- Stop button, to be able to switch from read-only to write mode without waiting
+for the process to complete or restarting the application.
+
+- Sortable list view, selecting individual files for repairing.
