@@ -239,7 +239,7 @@ class validatorThread(threading.Thread):
 
 		# start the new mp3val subprocess
 		self._mp3val = subprocess.Popen( command,
-			stdin=subprocess.PIPE, stdout=subprocess.PIPE, close_fds=True, universal_newlines=True
+			stdin=subprocess.PIPE, stdout=subprocess.PIPE, universal_newlines=True
 		)
 
 	def stopProcess(self):
@@ -424,11 +424,6 @@ if __name__ == "__main__":
 	gtk.gdk.threads_init()
 	if not mp3valbin:
 		gobject.idle_add(doErrormessage, "mp3val was not found. Is it installed?")
-	try:
-		ui = mp3valgui()
-		ui.start()
-		gtk.main()
-	except:
-		error = traceback.format_exc()
-		gobject.idle_add(doErrormessage, "An exception occurred during mp3valgui:\n"+error)
-		gtk.main()
+	ui = mp3valgui()
+	ui.start()
+	gtk.main()
