@@ -48,11 +48,11 @@ DWORD rotate_dword(DWORD x);
 
 int ValidateFile(unsigned char *baseptr,int iFileSize,MPEGINFO *mpginfo,ostream *out,char *filename,bool fix,int hFile) {
 	int iFrame;
-	int iFrameSize;
+	int iFrameSize=0;
 	int iLastMPEGFrame=0,iNewFrame;
 	bool WasFirstFrame=false;
-	int iXingOffset;
-	int iID3v1Offset;
+	int iXingOffset=0;
+	int iID3v1Offset=0;
 	int iFirstMPEGFrameOffset=0;
 	DWORD dwTemp;
 	int mpeg_total;
