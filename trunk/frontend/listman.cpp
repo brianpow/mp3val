@@ -13,7 +13,7 @@ int CFileList::cleanup_recursive(CFileNode *node) {
 		}
 	}
 	
-	delete node;
+	if(node!=&root) delete node;
 	
 	return 0;
 }
@@ -26,13 +26,14 @@ int CFileList::getfileno_internal(int viewmode,int n,FileInfo *fi,CFileNode **fn
 	szConstructedName[0]='\0';
 
 	for(;current;) {
-		if(cn==n&&!current->child) {
+		if(cn+current->count.get(viewmode)==n+1&&!current->child) {
 			if(fn) *fn=current;
 			if(fi) {
 				strcat(szConstructedName,current->szNodeName);
 				strcpy(fi->szFileName,szConstructedName);
 				fi->state=current->state;
 				fi->IsDir=current->IsDir;
+				fi->proot=&(current->sroot);
 			}
 			return 1;
 		}
@@ -54,7 +55,7 @@ int CFileList::getfileno_internal(int viewmode,int n,FileInfo *fi,CFileNode **fn
 //Public functions
 
 int CFileList::cleanup() {
-	if(root.next) cleanup_recursive(&root);
+	if(root.child) cleanup_recursive(&root);
 	return 0;
 }
 
@@ -102,18 +103,54 @@ int CFileList::deletefileno(int viewmode,int n) {
 	CFileNode *current,*temp;
 	int file_view_type;
 	
-	getfileno_internal(viewmode,n,NULL,&current);
+	if(!getfileno_internal(viewmode,n,NULL,&current)) return 0;
 	if(current->state==ST_NOT_SCANNED) file_view_type=VM_NOT_SCANNED;
 	else if(current->state==ST_NORMAL) file_view_type=VM_NORMAL;
 	else file_view_type=VM_PROBLEMS;
 	
 	for(;current!=&root;current=temp) {
 		temp=current->parent;
-		current->delnode();
+		delete current;
 		if(temp->child) break;
 	}
 	
 	for(current=temp;current!=&root;current=current->parent) current->count.dec(file_view_type);
 	
+	return 0;
+}
+
+int CFileList::changestate(int viewmode,int n,int state) {
+	CFileNode *pfnThisFile;
+	CFileNode *current;
+	int curstate;
+	if(getfileno_internal(viewmode,n,NULL,&pfnThisFile)) {
+		curstate=pfnThisFile->state;
+		pfnThisFile->state=state;
+		for(current=pfnThisFile;current;current=current->parent) {
+			current->count.dec(curstate);
+			current->count.inc(state);
+		}
+	}
+	
+	return 0;
+}
+
+int CStringNode::addnode(char *p) {
+	CStringNode *current;
+	for(current=this;current->next;current=current->next);
+	current->next=new CStringNode;
+	current=current->next;
+	current->str=new char[lstrlen(p)+1];
+	lstrcpy(current->str,p);
+	return 0;
+}
+
+int CStringNode::cleanup() {
+	CStringNode *current,*temp;
+	for(current=this->next;current;current=temp) {
+		temp=current->next;
+		delete current;
+	}
+	next=NULL;
 	return 0;
 }

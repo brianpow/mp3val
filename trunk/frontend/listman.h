@@ -5,18 +5,36 @@
 #define VM_NOT_SCANNED 1
 #define VM_NORMAL 2
 #define VM_PROBLEMS 3
+#define VM_FIXED 4
 
-#define VM_COUNT 4
+#define VM_COUNT 5
 
-#define ST_NOT_SCANNED 0
-#define ST_NORMAL 1
-#define ST_PROBLEM 2
+#define ST_NOT_APPLICABLE 0
+#define ST_NOT_SCANNED 1
+#define ST_NORMAL 2
+#define ST_PROBLEM 3
+#define ST_FIXED 4
 
-#define ST_COUNT 3
+#define ST_COUNT 5
 
 #include <cstring>
 
 #include <windows.h>
+
+struct CStringNode {
+	char *str;
+	CStringNode *next;
+
+	CStringNode() {
+		str=NULL;
+		next=NULL;
+	}
+	~CStringNode() {
+		if(str) delete str;
+	}
+	int addnode(char *p);
+	int cleanup();
+};
 
 struct CCount {
 	int total;
@@ -45,6 +63,7 @@ struct FileInfo {
 	char szFileName[MAX_PATH+1];
 	int state;
 	bool IsDir;
+	CStringNode *proot;
 };
 
 struct CFileNode {
@@ -55,6 +74,7 @@ struct CFileNode {
 	CFileNode *child;
 	CFileNode *parent;
 	bool IsDir;
+	CStringNode sroot;
 	
 	CFileNode() {
 		szNodeName[0]='\0';
@@ -72,6 +92,20 @@ struct CFileNode {
 		child=NULL;
 		parent=par;
 		IsDir=isdir;
+	}
+	
+	~CFileNode() {
+		sroot.cleanup();
+		if(!parent) return; //don't bother to clean up if we are root
+		CFileNode *current;
+		if(parent->child==this) {
+			parent->child=next;
+		}
+		else {
+			for(current=parent->child;current;current=current->next) if(current->next==this) break;
+			if(!current) return;
+			current->next=next;
+		}
 	}
 	
 	CFileNode *search(char *name) {
@@ -92,21 +126,6 @@ struct CFileNode {
 		current->next=new CFileNode(name,st,isdir,this);
 		return current->next;
 	}
-	
-	int delnode() {
-		CFileNode *current;
-		if(parent->child==this) {
-			parent->child=next;
-		}
-		else {
-			for(current=parent->child;current;current=current->next) if(current->next==this) break;
-			if(!current) return -1;
-			current->next=next;
-		}
-		delete this;
-
-		return 0;
-	}
 };
 
 class CFileList {
@@ -115,6 +134,7 @@ class CFileList {
 	int getfileno_internal(int viewmode,int n,FileInfo *fi,CFileNode **fn);
 public:
 	CFileList() {
+		root.IsDir=true;
 	}
 	~CFileList() {
 	}
@@ -122,6 +142,7 @@ public:
 	int addfile(char *szFileName);
 	int getfileno(int viewmode,int n,FileInfo *fi);
 	int deletefileno(int viewmode,int n);
+	int changestate(int viewmode,int n,int state);
 };
 
 #endif

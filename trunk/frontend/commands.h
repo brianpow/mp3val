@@ -12,19 +12,24 @@
 int InitCommands();
 
 int RefreshView(int iViewType);
+int AddDir(char *szDirName);
+
+int DoDropFiles(HDROP hDrop);
 
 int DoFileAddFile();
 int DoFileAddDir();
 int DoFileQuit();
 
-int DoActionsRemove();
-int DoActionsScanAll();
-int DoActionsScanSel();
-int DoActionsFixSel();
+int DoActionsRemove(bool selection);
+int DoActionsScan(bool selection,bool fix);
+int DoActionsStopScan();
 int DoActionsOptions();
+
+int DoViewSetMode(int mode);
 
 int DoHelpAbout();
 
 int HandleListViewRClick(LPNMITEMACTIVATE pnmact);
+int HandleSelectionChange(int item);
 
 #endif
