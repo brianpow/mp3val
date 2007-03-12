@@ -312,7 +312,7 @@ int DoViewSetMode(int mode) {
 }
 
 int DoHelpAbout() {
-	MessageBox(hWnd,"MP3val-frontend 0.0.2 (pre-alpha), (c) ring0, 2006-2007\nThis program is in an early development stage. Some important features can be missing. There may be some bugs.","About MP3val-frontend",MB_OK|MB_ICONINFORMATION);
+	MessageBox(hWnd,"MP3val-frontend 0.1.0 (alpha), (c) Alexey Kuznetsov, 2007\nThis program is in an early development stage. Some important features can be missing. There may be some bugs.","About MP3val-frontend",MB_OK|MB_ICONINFORMATION);
 	return 0;
 }
 
