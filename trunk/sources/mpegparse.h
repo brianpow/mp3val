@@ -22,6 +22,12 @@
 
 #include <iostream>
 
+/*
+ * MPEGINFO structure is used to contain both information about the last analyzed
+ * frame (filled by ValidateMPEGFrame) and for the entire stream.
+ */
+
+
 struct MPEGINFO {
 //MPEG frames counts
 	int mpeg1layer1;
@@ -54,12 +60,16 @@ struct MPEGINFO {
 	int garbage_at_the_begin;
 	int garbage_at_the_end;
 
-//Misc data
+//MPEG-related data
 	bool LastFrameStereo;
-	bool bVariableBitrate;
+	bool bLastFrameCRC;
+	bool bCRC;
+	bool bCRCError;
 	int iLastBitrate;
 	int iLastMPEGLayer;
 	int iLastMPEGVersion;
+//Miscellaneous data
+	bool bVariableBitrate;
 	int iTotalMPEGBytes;
 	int iErrors;
 	int iDeletedFrames;
@@ -97,6 +107,9 @@ struct MPEGINFO {
 		garbage_at_the_end=-1;
 		
 		LastFrameStereo=false;
+		bLastFrameCRC=false;
+		bCRC=false;
+		bCRCError=false;
 		bVariableBitrate=false;
 		iLastBitrate=-2;
 		iLastMPEGLayer=0;

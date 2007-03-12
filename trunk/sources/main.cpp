@@ -33,6 +33,7 @@ char pcBuffer2[CROSSAPI_MAX_PATH+1];
 bool FixErrors=false;
 bool bSuppressInfo=false;
 bool bPipeMode=false;
+bool bDeleteBaks=false;
 
 extern int iMappingLength;
 
@@ -64,12 +65,13 @@ int main(int argc, char *argv[]) {
 
 	if(help) {
 		cerr<<"MP3val - a program for MPEG audio stream validation.\n";
-		cerr<<"Version 0.1.5.\n\n";
+		cerr<<"Version 0.1.6.\n\n";
 		cerr<<"Usage: "<<argv[0]<<" <files to validate> [options]\n\n";
 		cerr<<"Options:\n\n";
 		cerr<<"\t-f                try to fix errors\n";
 		cerr<<"\t-l<file name>     write log to the specified file (default: stdout)\n";
 		cerr<<"\t-si               suppress INFO messages\n";
+		cerr<<"\t-nb               delete .bak files (suitable with -f)\n";
 		cerr<<"\t-p                pipe mode (receive input file names from stdin)\n";
 		cerr<<"\t-v                print version number and exit\n";
 		cerr<<"\n";
@@ -90,11 +92,14 @@ int main(int argc, char *argv[]) {
 		else if(!strcmp(argv[i],"-si")) {
 			bSuppressInfo=true;
 		}
+		else if(!strcmp(argv[i],"-nb")) {
+			bDeleteBaks=true;
+		}
 		else if(!strcmp(argv[i],"-p")) {
 			bPipeMode=true;
 		}
 		else if(!strcmp(argv[i],"-v")) {
-			cout<<"MP3val 0.1.5\n";
+			cout<<"MP3val 0.1.6\n";
 			return 0;
 		}
 		else {
@@ -102,6 +107,8 @@ int main(int argc, char *argv[]) {
 			return -1;
 		}
 	}
+	
+	if(bDeleteBaks&&!FixErrors) cerr<<"Note: using -nb doesn't make sense as long as -f isn't used\n";
 	
 	if(szLogFile) CrossAPI_GetFullPathName(szLogFile,szFullLogFile,CROSSAPI_MAX_PATH+2);
 	
@@ -212,17 +219,15 @@ int ProcessFile(char *szFileName,char *szLogFileName) {
 		strcat((char *)pcBuffer2,".bak");
 		if(!CrossAPI_MoveFile((char *)pcBuffer2,szFileName)) {
 			cerr<<"Error renaming \""<<szFileName<<"\"\n";
-			CrossAPI_UnmapFile(pImage);
 			log_out.close();
 			return 0;
 		}
 		if(!CrossAPI_MoveFile(szFileName,pcBuffer)) {
 			cerr<<"Error renaming temporary file\n";
-			CrossAPI_UnmapFile(pImage);
 			log_out.close();
 			return 0;
 		}
-
+		if(bDeleteBaks) CrossAPI_DeleteFile((char *)pcBuffer2);
 	}
 
 	if(FixErrors&&mpginfo.iErrors) {

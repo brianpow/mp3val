@@ -65,6 +65,11 @@ int PrintReport(ostream *out,char *filename,MPEGINFO *mpginfo) {
 		mpginfo->iErrors++;
 	}
 	
+	if(mpginfo->bCRCError) {
+		PrintMessage(out,"WARNING",filename,"Wrong CRC in one or more frames",-1);
+		mpginfo->iErrors++;
+	}
+	
 	if(mpginfo->VBRHeaderPresent) {
 		if(mpginfo->IsXingHeader) {
 /*

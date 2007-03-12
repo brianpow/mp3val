@@ -23,7 +23,7 @@ int hFile;
 int hFileMapping;
 int iMappingLength;
 
-#if (defined WIN32)||(defined __WIN32__)
+#if (defined WIN32)||(defined __WIN32__)||(defined __MSC_VER)
 
 #include <windows.h>
 
@@ -79,6 +79,10 @@ int CrossAPI_MoveFile(char *szNewName,char *szOldName) {
 	return MoveFile(szOldName,szNewName);
 }
 
+int CrossAPI_DeleteFile(char *szFileName) {
+	return DeleteFile(szFileName);
+}
+
 int CrossAPI_OpenFile(char *szFileName,bool create,bool write) {
 	return (int)CreateFile(szFileName,write?GENERIC_WRITE:GENERIC_READ,0,NULL,create?CREATE_ALWAYS:OPEN_EXISTING,FILE_ATTRIBUTE_NORMAL,NULL);
 }
@@ -114,9 +118,9 @@ void *CrossAPI_MapFile(char *filename) {
 		return NULL;
 	}
 
-	hFileMapping=(int)CreateFileMapping((HANDLE)hFile,NULL,PAGE_READONLY,0,0,NULL);
+	hFileMapping=(int)CreateFileMapping((HANDLE)hFile,NULL,PAGE_WRITECOPY,0,0,NULL);
 
-	pImage=MapViewOfFile((HANDLE)hFileMapping,FILE_MAP_READ,0,0,0);
+	pImage=MapViewOfFile((HANDLE)hFileMapping,FILE_MAP_COPY,0,0,0);
 	
 	iMappingLength=CrossAPI_GetFileSize(hFile);
 
@@ -235,6 +239,13 @@ int CrossAPI_MoveFile(char *szNewName,char *szOldName) {
 	return 1;
 }
 
+int CrossAPI_DeleteFile(char *szFileName) {
+	int res;
+	res=unlink(szFileName);
+	if(!unlink) return 1;
+	return 0;
+}
+
 int CrossAPI_OpenFile(char *szFileName,bool create,bool write) {
 	int flags=0;
 	if(create) flags|=(O_CREAT|O_TRUNC);
@@ -293,7 +304,7 @@ void *CrossAPI_MapFile(char *filename) {
 	dPages=iMappingLength/getpagesize();
 	iRoundedMappingLength=((int)ceil(dPages)+1)*getpagesize();
 
-	pImage=mmap(NULL,iRoundedMappingLength,PROT_READ,MAP_SHARED,hFile,0);
+	pImage=mmap(NULL,iRoundedMappingLength,PROT_READ|PROT_WRITE,MAP_PRIVATE,hFile,0);
 	
 	if(pImage==MAP_FAILED) return NULL;
 

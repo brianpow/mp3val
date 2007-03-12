@@ -20,7 +20,7 @@
 #ifndef __CROSSAPI_H__
 #define __CROSSAPI_H__
 
-#if (defined WIN32)||(defined __WIN32__)
+#if (defined WIN32)||(defined __WIN32__)||(defined _MSC_VER)
 
 #include <windows.h>
 
@@ -58,6 +58,7 @@ int CrossAPI_GetFullPathName(char *szFileName,char *pcBuffer,int iBufSize);
 int CrossAPI_GetTempFileAndName(int iBufSize,char *pcBuffer);
 
 int CrossAPI_MoveFile(char *szNewName,char *szOldName);
+int CrossAPI_DeleteFile(char *szFileName);
 
 int CrossAPI_OpenFile(char *szFileName,bool create,bool write);
 int CrossAPI_SetFilePointer(int iHandle,int iPointer,bool bFromCurrent);

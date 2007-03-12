@@ -21,6 +21,7 @@
 #include "mpegparse.h"
 #include "report.h"
 #include "out.h"
+#include "crc.h"
 #include <cstring>
 #include <iostream>
 #include <fstream>
@@ -34,6 +35,7 @@ int mpeg2layer1_bitrates[]={-1,32,48,56,64,80,96,112,128,144,160,176,192,224,256
 int mpeg2layers23_bitrates[]={-1,8,16,24,32,40,48,56,64,80,96,112,128,144,160,-1};
 
 int ValidateMPEGFrame(unsigned char *baseptr,int index, MPEGINFO *mpginfo);
+int CheckMP3CRC(unsigned char *baseptr,int index,MPEGINFO *mpginfo,bool fix);
 int ValidateID3v2Tag(unsigned char *baseptr,int index, MPEGINFO *mpginfo);
 int ValidateAPEv2Tag(unsigned char *baseptr,int index, MPEGINFO *mpginfo);
 
@@ -103,6 +105,7 @@ int ValidateFile(unsigned char *baseptr,int iFileSize,MPEGINFO *mpginfo,ostream 
 //MPEG frame
 			iFrameSize=ValidateMPEGFrame(baseptr,iFrame,mpginfo);
 			if(iFrameSize!=-1) {
+				if(iFrameSize+iFrame<=iFileSize&&mpginfo->iLastMPEGLayer==3&&mpginfo->bLastFrameCRC) CheckMP3CRC(baseptr,iFrame,mpginfo,fix);
 				if(fix&&!WasFirstFrame) iFirstMPEGFrameOffset=CrossAPI_SetFilePointer(hFile,0,true);
 				if(fix) {
 					WriteToFile(hFile,(char *)baseptr,iFrame,iFrameSize,iFileSize);
@@ -134,7 +137,7 @@ int ValidateFile(unsigned char *baseptr,int iFileSize,MPEGINFO *mpginfo,ostream 
 				continue;
 			}
 		}
-
+//APEv2 tag
 		if(!memcmp(&baseptr[iFrame],"APET",4)) {
 			if(iFrame+16>iFileSize) {
 				mpginfo->truncated=iFrame;
@@ -260,6 +263,15 @@ int ValidateMPEGFrame(unsigned char *baseptr,int index, MPEGINFO *mpginfo) {
 
 	int bitrate_index=0;
 	int iFrameSize;
+	
+//Check if the frame contains CRC
+	if(baseptr[index+1]&0x01) {
+		mpginfo->bLastFrameCRC=false;
+	}
+	else {
+		mpginfo->bLastFrameCRC=true;
+		mpginfo->bCRC=true;
+	}
 
 // Determine MPEG version and layer
 	switch((baseptr[index+1]>>1)&0x0F) {
@@ -383,6 +395,45 @@ int ValidateMPEGFrame(unsigned char *baseptr,int index, MPEGINFO *mpginfo) {
 	mpginfo->iTotalMPEGBytes+=iFrameSize;
 	
 	return iFrameSize;
+}
+
+int CheckMP3CRC(unsigned char *baseptr,int index,MPEGINFO *mpginfo,bool fix) {
+	int crc=0xFFFF;
+	int storedcrc=0;
+	int iSideInfoSize;
+	crc=CalculateCRC16(crc,0x8005,(char *)&baseptr[index+2],2);
+	
+	if(mpginfo->LastFrameStereo) {
+		if(mpginfo->iLastMPEGVersion==1) {
+			iSideInfoSize=32;
+		}
+		else {
+			iSideInfoSize=17;
+		}
+	}
+	else {
+		if(mpginfo->iLastMPEGVersion==1) {
+			iSideInfoSize=17;
+		}
+		else {
+			iSideInfoSize=9;
+		}
+	}
+	
+	crc=CalculateCRC16(crc,0x8005,(char *)&baseptr[index+6],iSideInfoSize);
+	
+	((char *)&storedcrc)[1]=baseptr[index+4];
+	((char *)&storedcrc)[0]=baseptr[index+5];
+	
+	if(storedcrc!=crc) {
+		mpginfo->bCRCError=true;
+		if(fix) {
+			baseptr[index+4]=((char *)&crc)[1];
+			baseptr[index+5]=((char *)&crc)[0];
+		}
+	}
+	
+	return 0;
 }
 
 int ValidateID3v2Tag(unsigned char *baseptr,int index, MPEGINFO *mpginfo) {
