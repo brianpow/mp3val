@@ -46,7 +46,7 @@ LRESULT CALLBACK ListViewSubclassingProc(HWND,UINT,WPARAM,LPARAM);
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine, int iCmdShow) {
 	char szAppName[]="MP3Val-frontend";
-	char szMainWindowCaption[]="MP3val-frontend 0.1.0 (alpha)";
+	char szMainWindowCaption[]="MP3val-frontend 0.1.0+ (alpha)";
 	MSG msg;
 	WNDCLASS wndclass;
 	BOOL msgstatus;
@@ -199,7 +199,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
 				HandleListViewRClick((LPNMITEMACTIVATE)pnmhdr);
 				return 0;
 			case LVN_ITEMCHANGED:
-				HandleSelectionChange(-1);
+//				HandleSelectionChange(-1);
 				return 0;
 			}
 		}
@@ -345,8 +345,13 @@ int InitToolBar() {
 }
 
 LRESULT CALLBACK ListViewSubclassingProc(HWND hWnd,UINT message,WPARAM wParam,LPARAM lParam) {
-	if(message==WM_LBUTTONDOWN) {
+	LRESULT res;
+	
+	res=CallWindowProc(StdListViewProc,hWnd,message,wParam,lParam);
+	
+	if(message==WM_LBUTTONDOWN||message==WM_KEYDOWN) {
 		bClicked=true;
+		HandleSelectionChange(-1);
 	}
-	return CallWindowProc(StdListViewProc,hWnd,message,wParam,lParam);
+	return res;
 }

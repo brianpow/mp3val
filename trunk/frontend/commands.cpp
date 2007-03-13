@@ -123,7 +123,7 @@ int AddDir(char *szDirName) {
 			hDirThread=NULL;
 		}
 		else {
-			MessageBox(hWnd,"Processing thread is still active","MP3val frontend",MB_OK|MB_ICONWARNING);
+			MessageBox(hWnd,"Processing thread is still active","MP3val-frontend",MB_OK|MB_ICONWARNING);
 			return 0;
 		}
 	}
@@ -260,7 +260,7 @@ int DoActionsScan(bool selection,bool fix) {
 			hThread=NULL;
 		}
 		else {
-			MessageBox(hWnd,"Processing thread is still active","MP3val frontend",MB_OK|MB_ICONWARNING);
+			MessageBox(hWnd,"Processing thread is still active","MP3val-frontend",MB_OK|MB_ICONWARNING);
 			return 0;
 		}
 	}
@@ -283,14 +283,14 @@ int DoActionsStopScan() {
 	}
 	
 	if(hThread) {
-		res=MessageBox(hWnd,"Abort operation?","MP3val frontend",MB_YESNO|MB_ICONWARNING);
+		res=MessageBox(hWnd,"Abort operation?","MP3val-frontend",MB_YESNO|MB_ICONWARNING);
 		if(res!=IDYES) return 0;
 		TerminateThread(hThread,1);
 		CloseHandle(hThread);
 		MySpawner.DespawnProcess();
-		MessageBox(hWnd,"Processing thread has been terminated by user","MP3val frontend",MB_OK|MB_ICONERROR);
+		MessageBox(hWnd,"Processing thread has been terminated by user","MP3val-frontend",MB_OK|MB_ICONERROR);
 	}
-	else MessageBox(hWnd,"Nothing to abort","MP3val frontend",MB_OK|MB_ICONERROR);
+	else MessageBox(hWnd,"Nothing to abort","MP3val-frontend",MB_OK|MB_ICONERROR);
 	return 0;
 }
 
@@ -312,11 +312,12 @@ int DoViewSetMode(int mode) {
 }
 
 int DoHelpAbout() {
-	MessageBox(hWnd,"MP3val-frontend 0.1.0 (alpha), (c) Alexey Kuznetsov, 2007\nThis program is in an early development stage. Some important features can be missing. There may be some bugs.","About MP3val-frontend",MB_OK|MB_ICONINFORMATION);
+	MessageBox(hWnd,"MP3val-frontend 0.1.0+ (alpha), (c) Alexey Kuznetsov, 2007\nThis program is in an early development stage. Some important features can be missing. There may be some bugs.","About MP3val-frontend",MB_OK|MB_ICONINFORMATION);
 	return 0;
 }
 
 int HandleListViewRClick(LPNMITEMACTIVATE pnmact){
+	HandleSelectionChange(-1);
 	ClientToScreen(hListView,&(pnmact->ptAction));
     TrackPopupMenu(hPopup,
             TPM_LEFTALIGN|TPM_LEFTBUTTON|TPM_RIGHTBUTTON,
@@ -333,6 +334,7 @@ int HandleSelectionChange(int item) {
 	int i;
 	FileInfo fi;
 	CStringNode *current;
+	static int prev=-1;
 	
 	if(bWorkingWithList) return 0;
 	
@@ -341,6 +343,8 @@ int HandleSelectionChange(int item) {
 		if(i==-1) return 0;
 	}
 	else i=item;
+	
+	if(i==prev&&!SendMessage(hEdit,EM_GETMODIFY,(WPARAM)0,(WPARAM)0)) return 0;
 	
 	if(!(list.getfileno(iViewMode,i,&fi))) return 0;
 	
@@ -354,5 +358,8 @@ int HandleSelectionChange(int item) {
 	}
 	
 	if(!(fi.proot->next)) SendMessage(hEdit,WM_SETTEXT,(WPARAM)0,(LPARAM)"Not scanned yet!");
+	
+	SendMessage(hEdit,EM_SETMODIFY,(WPARAM)FALSE,(WPARAM)0);
+	
 	return 0;
 }

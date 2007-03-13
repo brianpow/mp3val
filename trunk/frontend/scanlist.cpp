@@ -69,8 +69,8 @@ int ScanList(HWND hListView, CFileList* plist, bool selected, bool fix) {
 	
 	if(!bClicked) SendMessage(hEdit,WM_SETTEXT,(WPARAM)0,(LPARAM)"Scanning completed!");
 	
-	if(!fix) MessageBox(GetParent(hListView),"Scan completed","MP3val frontend",MB_OK|MB_ICONINFORMATION);
-	else MessageBox(GetParent(hListView),"Scan and repair completed","MP3val frontend",MB_OK|MB_ICONINFORMATION);
+	if(!fix) MessageBox(GetParent(hListView),"Scan completed","MP3val-frontend",MB_OK|MB_ICONINFORMATION);
+	else MessageBox(GetParent(hListView),"Scan and repair completed","MP3val-frontend",MB_OK|MB_ICONINFORMATION);
 	
 	if(iViewMode) RefreshView(iViewMode);
 	
