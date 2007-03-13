@@ -73,6 +73,7 @@ struct MPEGINFO {
 	int iTotalMPEGBytes;
 	int iErrors;
 	int iDeletedFrames;
+	int iCRCErrors;
 	
 	MPEGINFO() {
 		clear();
@@ -114,6 +115,7 @@ struct MPEGINFO {
 		iLastBitrate=-2;
 		iLastMPEGLayer=0;
 		iLastMPEGVersion=0;
+		iCRCErrors=0;
 		
 		iTotalMPEGBytes=0;
 		iErrors=0;

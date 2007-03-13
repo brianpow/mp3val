@@ -66,7 +66,8 @@ int PrintReport(ostream *out,char *filename,MPEGINFO *mpginfo) {
 	}
 	
 	if(mpginfo->bCRCError) {
-		PrintMessage(out,"WARNING",filename,"Wrong CRC in one or more frames",-1);
+		sprintf(szMsgBuf,"Wrong CRC in %d frames",mpginfo->iCRCErrors);
+		PrintMessage(out,"WARNING",filename,szMsgBuf,-1);
 		mpginfo->iErrors++;
 	}
 	
@@ -207,6 +208,10 @@ int PrintReport(ostream *out,char *filename,MPEGINFO *mpginfo) {
 		}
 		else {
 			(*out)<<"no VBR header";
+		}
+		
+		if(mpginfo->bCRC) {
+			(*out)<<", CRC";
 		}
 
 		(*out)<<"\n";

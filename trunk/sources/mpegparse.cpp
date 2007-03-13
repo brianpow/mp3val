@@ -427,6 +427,7 @@ int CheckMP3CRC(unsigned char *baseptr,int index,MPEGINFO *mpginfo,bool fix) {
 	
 	if(storedcrc!=crc) {
 		mpginfo->bCRCError=true;
+		mpginfo->iCRCErrors++;
 		if(fix) {
 			baseptr[index+4]=((char *)&crc)[1];
 			baseptr[index+5]=((char *)&crc)[0];

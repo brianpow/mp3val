@@ -65,7 +65,7 @@ int main(int argc, char *argv[]) {
 
 	if(help) {
 		cerr<<"MP3val - a program for MPEG audio stream validation.\n";
-		cerr<<"Version 0.1.6.\n\n";
+		cerr<<"Version 0.1.6+.\n\n";
 		cerr<<"Usage: "<<argv[0]<<" <files to validate> [options]\n\n";
 		cerr<<"Options:\n\n";
 		cerr<<"\t-f                try to fix errors\n";
@@ -99,7 +99,7 @@ int main(int argc, char *argv[]) {
 			bPipeMode=true;
 		}
 		else if(!strcmp(argv[i],"-v")) {
-			cout<<"MP3val 0.1.6\n";
+			cout<<"MP3val 0.1.6+\n";
 			return 0;
 		}
 		else {

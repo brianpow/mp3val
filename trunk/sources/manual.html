@@ -1,10 +1,10 @@
 <html>
 <head>
 	<meta http-equiv="Content-type" content="text/html; charset=ISO-8859-1">
-	<title>MP3val 0.1.6: Documentation</title>
+	<title>MP3val 0.1.6+: Documentation</title>
 </head>
 <body>
-	<p><h2>MP3val 0.1.6: Documentation</h2>
+	<p><h2>MP3val 0.1.6+: Documentation</h2>
 	<p>
 		<ol>
 			<li><a href="#intro">Introduction</a>
@@ -121,9 +121,9 @@
 				<td align=center>-
 				<td>Files encoded with VBR should have a VBR header (either Xing or VBRI), otherwise seeking can be broken. This will be fixable in the future versions.
 			<tr>
-				<td><i>Wrong CRC in one or more frames</i>
+				<td><i>Wrong CRC in ... frames</i>
 				<td align=center>+
-				<td>Some frames in the file are protected by CRC, but the checksum is wrong. It usually means that the file is broken. Although MP3val is able to write right CRC values, it's better to get a "unbroken" file unless you are sure that the problem is caused by software that calculates CRC incorrectly. Note that only a minority of files is protected by CRC.
+				<td>Some frames in the file are protected by CRC, but the checksum is wrong. It means that either the file was encoded or processed by broken software, or it was broken during storage or transmission. MP3val reports a number of frames with incorrect CRC, which can be used as a hint (if this number equals or is about the total number of frames, then it's likely due to a bad encoder). Note that only a minority of files is protected by CRC.
 			<tr>
 				<td><i>Non-layer-III frame encountered</i>
 				<td align=center>-
