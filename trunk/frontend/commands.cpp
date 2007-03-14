@@ -139,7 +139,16 @@ int AddDir(char *szDirName) {
 
 int DoDropFiles(HDROP hDrop) {
 	char buf[MAX_PATH+1];
+	DWORD dwExitCode;
 	int i,count;
+	
+	if(hThread) {
+		GetExitCodeThread(hThread,&dwExitCode);
+		if(dwExitCode==STILL_ACTIVE) {
+			MessageBox(hWnd,"Impossible during scan","MP3val-frontend",MB_OK|MB_ICONERROR);
+			return 0;
+		}
+	}
 	
 	count=DragQueryFile(hDrop,0xFFFFFFFF,buf,MAX_PATH+1);
 	for(i=0;i<=count-1;i++) {
@@ -156,9 +165,18 @@ int DoDropFiles(HDROP hDrop) {
 
 int DoFileAddFile() {
 	DWORD dwAttr;
+	DWORD dwExitCode;
 	char filename[MAX_PATH+1];
 	char dirname[MAX_PATH+1];
 	char *p;
+	
+	if(hThread) {
+		GetExitCodeThread(hThread,&dwExitCode);
+		if(dwExitCode==STILL_ACTIVE) {
+			MessageBox(hWnd,"Impossible during scan","MP3val-frontend",MB_OK|MB_ICONERROR);
+			return 0;
+		}
+	}
 	
 	if(!GetOpenFileName(&ofn)) return 1;
 	dwAttr=GetFileAttributes(ofn.lpstrFile);
@@ -185,6 +203,15 @@ int DoFileAddDir() {
 	BROWSEINFO bi;
 	LPCITEMIDLIST pidl;
 	char tmpbuf[MAX_PATH+1];
+	DWORD dwExitCode;
+	
+	if(hThread) {
+		GetExitCodeThread(hThread,&dwExitCode);
+		if(dwExitCode==STILL_ACTIVE) {
+			MessageBox(hWnd,"Impossible during scan","MP3val-frontend",MB_OK|MB_ICONERROR);
+			return 0;
+		}
+	}
 
 	bi.hwndOwner=hWnd;
 	bi.pidlRoot=NULL;
@@ -305,6 +332,15 @@ int DoActionsOptions() {
 
 int DoViewSetMode(int mode) {
 	int i;
+	DWORD dwExitCode;
+	
+	if(hThread) {
+		GetExitCodeThread(hThread,&dwExitCode);
+		if(dwExitCode==STILL_ACTIVE) {
+			MessageBox(hWnd,"Impossible during scan","MP3val-frontend",MB_OK|MB_ICONERROR);
+			return 0;
+		}
+	}
 	
 	iViewMode=mode;
 	for(i=0;i<=VM_COUNT-1;i++) {

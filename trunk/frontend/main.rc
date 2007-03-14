@@ -22,32 +22,32 @@ BEGIN
     POPUP "&File"
     BEGIN
         MENUITEM "Add &file(s)...",IDM_FILE_ADDFILE
-        MENUITEM "Add folder...",IDM_FILE_ADDDIR
+        MENUITEM "Add fol&der...",IDM_FILE_ADDDIR
         MENUITEM SEPARATOR
-        MENUITEM "Options...",IDM_FILE_OPTIONS
+        MENUITEM "&Options...",IDM_FILE_OPTIONS
         MENUITEM SEPARATOR
-        MENUITEM "Quit",IDM_FILE_QUIT
+        MENUITEM "&Quit",IDM_FILE_QUIT
     END
     POPUP "&Actions"
     BEGIN
-        MENUITEM "Delete selected file(s) from list\tDel",IDM_ACTIONS_REMOVE
-        MENUITEM "Clear entire list",IDM_ACTIONS_CLEAR
+        MENUITEM "&Delete selected file(s) from list\tDel",IDM_ACTIONS_REMOVE
+        MENUITEM "&Clear entire list",IDM_ACTIONS_CLEAR
         MENUITEM SEPARATOR
-        MENUITEM "Scan all",IDM_ACTIONS_SCANALL
-        MENUITEM "Scan selected file(s)",IDM_ACTIONS_SCANSEL
+        MENUITEM "Scan &all",IDM_ACTIONS_SCANALL
+        MENUITEM "Scan &selected file(s)",IDM_ACTIONS_SCANSEL
         MENUITEM SEPARATOR
-        MENUITEM "Repair all files",IDM_ACTIONS_FIX_PROBLEMS
-        MENUITEM "Repair selected file(s)",IDM_ACTIONS_FIXSEL
+        MENUITEM "&Repair all files",IDM_ACTIONS_FIX_PROBLEMS
+        MENUITEM "Repair s&elected file(s)",IDM_ACTIONS_FIXSEL
         MENUITEM SEPARATOR
-        MENUITEM "Abort scan/repair",IDM_ACTIONS_STOPSCAN
+        MENUITEM "A&bort scan/repair",IDM_ACTIONS_STOPSCAN
     END
-    POPUP "View"
+    POPUP "&View"
     BEGIN
-        MENUITEM "All files\tCtrl-F1",IDM_VIEW_ALL, CHECKED
-        MENUITEM "Not scanned\tCtrl-F2",IDM_VIEW_NOT_SCANNED
-        MENUITEM "Scanned files without problems\tCtrl-F3",IDM_VIEW_NORMAL
-        MENUITEM "Scanned files with problems\tCtrl-F4",IDM_VIEW_PROBLEMS
-        MENUITEM "Repaired files\tCtrl-F5",IDM_VIEW_REPAIRED
+        MENUITEM "&All files\tCtrl-F1",IDM_VIEW_ALL, CHECKED
+        MENUITEM "&Not scanned\tCtrl-F2",IDM_VIEW_NOT_SCANNED
+        MENUITEM "&Scanned files without problems\tCtrl-F3",IDM_VIEW_NORMAL
+        MENUITEM "Scanned files with &problems\tCtrl-F4",IDM_VIEW_PROBLEMS
+        MENUITEM "&Repaired files\tCtrl-F5",IDM_VIEW_REPAIRED
     END
     POPUP "&Help"
     BEGIN
