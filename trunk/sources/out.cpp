@@ -29,7 +29,7 @@ int GetLastFrameSize() {
 int WriteToFile(int hFile,char *baseptr,int index,int bytes,int iFileSize) {
 	int tmp;
 	int iBytesWritten,iBytesWrittenTotal=0;
-
+	
 	if(bytes<0) {
 		if(iPrevSize) CrossAPI_SetFilePointer(hFile,-iPrevSize,true);
 		tmp=iPrevSize;

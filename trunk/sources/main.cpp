@@ -207,7 +207,13 @@ int ProcessFile(char *szFileName,char *szLogFileName) {
 
 		cout<<"Rebuilding file \""<<szFileName<<"\"...\n";
 
-		ValidateFile(pImage,iMappingLength,&mpginfo,NULL,NULL,true,(int)hData);
+		if(ValidateFile(pImage,iMappingLength,&mpginfo,NULL,NULL,true,(int)hData)==-1) {
+			cerr<<"Error writing to temporary file\n";
+			CrossAPI_CloseFile(hData);
+			CrossAPI_UnmapFile(pImage);
+			CrossAPI_DeleteFile(pcBuffer);
+			return 0;
+		}
 
 		CrossAPI_CloseFile(hData);
 	}

@@ -98,7 +98,7 @@ int CrossAPI_WriteFile(int iHandle,char *pcBuffer,int iBytes,int *iBytesWritten)
 }
 
 int CrossAPI_CloseFile(int iHandle) {
-	return CloseHandle(HANDLE(iHandle));
+	return CloseHandle((HANDLE)iHandle);
 }
 
 int CrossAPI_GetFileSize(int iHandle) {
@@ -119,6 +119,11 @@ void *CrossAPI_MapFile(char *filename) {
 	}
 
 	hFileMapping=(int)CreateFileMapping((HANDLE)hFile,NULL,PAGE_WRITECOPY,0,0,NULL);
+	
+	if(!hFileMapping) {
+		CloseHandle((HANDLE)hFile);
+		return NULL;
+	}
 
 	pImage=MapViewOfFile((HANDLE)hFileMapping,FILE_MAP_COPY,0,0,0);
 	
@@ -242,7 +247,7 @@ int CrossAPI_MoveFile(char *szNewName,char *szOldName) {
 int CrossAPI_DeleteFile(char *szFileName) {
 	int res;
 	res=unlink(szFileName);
-	if(!unlink) return 1;
+	if(!res) return 1;
 	return 0;
 }
 

@@ -77,7 +77,7 @@ int ValidateFile(unsigned char *baseptr,int iFileSize,MPEGINFO *mpginfo,ostream 
 		else {
 			iFrame+=ValidateID3v2Tag(baseptr,iFrame,mpginfo);
 			if(fix) {
-				WriteToFile(hFile,(char *)baseptr,0,iFrame,iFileSize);
+				if(WriteToFile(hFile,(char *)baseptr,0,iFrame,iFileSize)==-1) return -1;
 				LastFrameWasMPEG=false;
 			}
 		}
@@ -108,7 +108,7 @@ int ValidateFile(unsigned char *baseptr,int iFileSize,MPEGINFO *mpginfo,ostream 
 				if(iFrameSize+iFrame<=iFileSize&&mpginfo->iLastMPEGLayer==3&&mpginfo->bLastFrameCRC) CheckMP3CRC(baseptr,iFrame,mpginfo,fix);
 				if(fix&&!WasFirstFrame) iFirstMPEGFrameOffset=CrossAPI_SetFilePointer(hFile,0,true);
 				if(fix) {
-					WriteToFile(hFile,(char *)baseptr,iFrame,iFrameSize,iFileSize);
+					if(WriteToFile(hFile,(char *)baseptr,iFrame,iFrameSize,iFileSize)==-1) return -1;
 					LastFrameWasMPEG=true;
 				}
 				if(!WasFirstFrame) {
@@ -145,7 +145,7 @@ int ValidateFile(unsigned char *baseptr,int iFileSize,MPEGINFO *mpginfo,ostream 
 			}
 			iFrameSize=ValidateAPEv2Tag(baseptr,iFrame,mpginfo);
 			if(fix) {
-				WriteToFile(hFile,(char *)baseptr,iFrame,iFrameSize,iFileSize);
+				if(WriteToFile(hFile,(char *)baseptr,iFrame,iFrameSize,iFileSize)==-1) return -1;
 				LastFrameWasMPEG=false;
 			}
 			iFrame+=iFrameSize;
@@ -158,7 +158,7 @@ int ValidateFile(unsigned char *baseptr,int iFileSize,MPEGINFO *mpginfo,ostream 
 				mpginfo->iTotalMPEGBytes-=WriteToFile(hFile,NULL,0,-1,-1);
 			}
 			else {
-				WriteToFile(hFile,NULL,0,-1,-1);
+				if(WriteToFile(hFile,NULL,0,-1,-1)==-1) return -1;
 			}
 		}
 		else if(LastFrameWasMPEG) {
@@ -206,7 +206,7 @@ int ValidateFile(unsigned char *baseptr,int iFileSize,MPEGINFO *mpginfo,ostream 
 	
 	if(mpginfo->truncated>=0) {
 		if(fix) {
-			WriteToFile(hFile,NULL,0,-1,-1);
+			if(WriteToFile(hFile,NULL,0,-1,-1)==-1) return -1;
 			if(LastFrameWasMPEG) {
 				mpginfo->iTotalMPEGBytes-=iFrameSize;
 				mpginfo->iDeletedFrames++;
@@ -218,7 +218,9 @@ int ValidateFile(unsigned char *baseptr,int iFileSize,MPEGINFO *mpginfo,ostream 
 		}
 	}
 
-	if(fix&&mpginfo->id3v1) WriteToFile(hFile,(char *)baseptr,iID3v1Offset,128,-1);
+	if(fix&&mpginfo->id3v1) {
+		if(WriteToFile(hFile,(char *)baseptr,iID3v1Offset,128,-1)==-1) return -1;
+	}
 
 	if(fix) CrossAPI_SetEndOfFile(hFile);
 
@@ -227,34 +229,33 @@ int ValidateFile(unsigned char *baseptr,int iFileSize,MPEGINFO *mpginfo,ostream 
 			if(mpginfo->BytesPresent&&mpginfo->FramesPresent) {
 				CrossAPI_SetFilePointer(hFile,iFirstMPEGFrameOffset+iXingOffset+12,false);
 				dwTemp=rotate_dword(mpeg_total-mpginfo->iDeletedFrames);
-				WriteToFile(hFile,(char *)&dwTemp,0,4,-1);
+				if(WriteToFile(hFile,(char *)&dwTemp,0,4,-1)==-1) return -1;
 				dwTemp=rotate_dword(mpginfo->iTotalMPEGBytes);
-				WriteToFile(hFile,(char *)&dwTemp,0,4,-1);
+				if(WriteToFile(hFile,(char *)&dwTemp,0,4,-1)==-1) return -1;
 			}
 			else if(mpginfo->BytesPresent) {
 				CrossAPI_SetFilePointer(hFile,iFirstMPEGFrameOffset+iXingOffset+12,false);
 				dwTemp=rotate_dword(mpginfo->iTotalMPEGBytes);
-				WriteToFile(hFile,(char *)&dwTemp,0,4,-1);
+				if(WriteToFile(hFile,(char *)&dwTemp,0,4,-1)==-1) return -1;
 			}
 			else if(mpginfo->FramesPresent) {
 				CrossAPI_SetFilePointer(hFile,iFirstMPEGFrameOffset+iXingOffset+12,false);
 				dwTemp=rotate_dword(mpeg_total-mpginfo->iDeletedFrames);
-				WriteToFile(hFile,(char *)&dwTemp,0,4,-1);
+				if(WriteToFile(hFile,(char *)&dwTemp,0,4,-1)==-1) return -1;
 			}
 		}
 		else {
 			CrossAPI_SetFilePointer(hFile,iFirstMPEGFrameOffset+46,false);
 			dwTemp=rotate_dword(mpginfo->iTotalMPEGBytes);
-			WriteToFile(hFile,(char *)&dwTemp,0,4,-1);
+			if(WriteToFile(hFile,(char *)&dwTemp,0,4,-1)==-1) return -1;
 			dwTemp=rotate_dword(mpeg_total-mpginfo->iDeletedFrames);
-			WriteToFile(hFile,(char *)&dwTemp,0,4,-1);
+			if(WriteToFile(hFile,(char *)&dwTemp,0,4,-1)==-1) return -1;
 		}
 	}
 
 	if(fix) mpginfo->iErrors=1;
 
 	return 0;
-
 }
 
 int ValidateMPEGFrame(unsigned char *baseptr,int index, MPEGINFO *mpginfo) {
