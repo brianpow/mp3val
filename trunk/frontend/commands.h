@@ -32,4 +32,6 @@ int DoHelpAbout();
 int HandleListViewRClick(LPNMITEMACTIVATE pnmact);
 int HandleSelectionChange(int item);
 
+int CALLBACK BrowseCallbackProc(HWND hWnd,UINT message,LPARAM lParam,LPARAM lpData);
+
 #endif

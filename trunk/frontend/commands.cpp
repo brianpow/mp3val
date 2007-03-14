@@ -21,6 +21,8 @@ char szStateFixed[]="FIXED";
 
 char *szStates[5]={szStateNotApplicable,szStateNotScanned,szStateOK,szStateProblem,szStateFixed};
 
+char szDirBeingAdded[MAX_PATH+1];
+
 extern HWND hWnd,hListView,hEdit;
 extern HMENU hViewMenu,hPopup;
 extern bool bClicked;
@@ -74,6 +76,8 @@ int InitCommands() {
 		MessageBox(hWnd,"Cannot find mp3val.exe","Error!",MB_OK|MB_ICONERROR);
 		ExitProcess(0);
 	}
+	
+	szDirBeingAdded[0]='\0';
 	
 	return 0;
 }
@@ -178,16 +182,16 @@ int DoFileAddFile() {
 }
 
 int DoFileAddDir() {
-	char buf[MAX_PATH+1];
 	BROWSEINFO bi;
 	LPCITEMIDLIST pidl;
+	char tmpbuf[MAX_PATH+1];
 
 	bi.hwndOwner=hWnd;
 	bi.pidlRoot=NULL;
-	bi.pszDisplayName=buf;
+	bi.pszDisplayName=tmpbuf;
 	bi.lpszTitle=szBrowseForFolderTitle;
 	bi.ulFlags=BIF_EDITBOX;
-	bi.lpfn=NULL;
+	bi.lpfn=BrowseCallbackProc;
 	bi.lParam=(LPARAM)0;
 
 	OleInitialize(NULL);
@@ -197,13 +201,13 @@ int DoFileAddDir() {
 		return 0;
 	}
 	
-	SHGetPathFromIDList(pidl,buf);
+	SHGetPathFromIDList(pidl,szDirBeingAdded);
 	
 	CoTaskMemFree((void *)pidl);
 	
 	OleUninitialize();
 	
-	AddDir(buf);
+	AddDir(szDirBeingAdded);
 		
 	return 0;
 }
@@ -360,6 +364,14 @@ int HandleSelectionChange(int item) {
 	if(!(fi.proot->next)) SendMessage(hEdit,WM_SETTEXT,(WPARAM)0,(LPARAM)"Not scanned yet!");
 	
 	SendMessage(hEdit,EM_SETMODIFY,(WPARAM)FALSE,(WPARAM)0);
+	
+	return 0;
+}
+
+int CALLBACK BrowseCallbackProc(HWND hWnd,UINT message,LPARAM lParam,LPARAM lpData) {
+	if(message==BFFM_INITIALIZED&&szDirBeingAdded[0]) {
+		SendMessage(hWnd,BFFM_SETSELECTION,(WPARAM)TRUE,(LPARAM)szDirBeingAdded);
+	}
 	
 	return 0;
 }
