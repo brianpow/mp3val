@@ -30,6 +30,9 @@ int ScanDirForFiles(CFileList *pl,char *szDirName) {
 	DWORD curtime;
 	
 	GetCurrentDirectory(MAX_PATH+1,buf);
+	
+	if(!SetCurrentDirectory(szDirName)) return 0;
+	
 	curtime=GetTickCount();
 	if(curtime-lasttime>500) {
 		GetFullPathName(szDirName,MAX_PATH+1,pathbuf,&filepart);
@@ -39,14 +42,11 @@ int ScanDirForFiles(CFileList *pl,char *szDirName) {
 		lasttime=curtime;
 	}
 	
-	SetCurrentDirectory(szDirName);
-	
 	hFind=FindFirstFile("*",&wfd);
 	if(hFind!=INVALID_HANDLE_VALUE) {
 		do {
 			if(wfd.dwFileAttributes&FILE_ATTRIBUTE_DIRECTORY) {
-				if(lstrcmp(wfd.cFileName,".")&&lstrcmp(wfd.cFileName,"..")&&lstrcmp(wfd.cFileName,"System Volume Information"))
-				ScanDirForFiles(pl,wfd.cFileName);
+				if(lstrcmp(wfd.cFileName,".")&&lstrcmp(wfd.cFileName,"..")) ScanDirForFiles(pl,wfd.cFileName);
 			}
 			if(!lstrcmp(".mp3",&wfd.cFileName[lstrlen(wfd.cFileName)-4])) {
 				GetFullPathName(wfd.cFileName,MAX_PATH+1,pathbuf,&filepart);
