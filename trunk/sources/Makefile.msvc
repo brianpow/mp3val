@@ -1,5 +1,5 @@
 mp3val.exe: main.obj mpegparse.obj out.obj report.obj crossapi.obj crc.obj
-	cl /O1 /GX /MD main.obj mpegparse.obj out.obj report.obj crossapi.obj crc.obj user32.lib -o mp3val.exe
+	cl /O1 /GX /MD main.obj mpegparse.obj out.obj report.obj crossapi.obj crc.obj user32.lib /Femp3val.exe
 main.obj: main.cpp
 	cl /O1 /GX /MD /c main.cpp
 mpegparse.obj: mpegparse.cpp
