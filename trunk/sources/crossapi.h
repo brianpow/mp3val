@@ -20,7 +20,7 @@
 #ifndef __CROSSAPI_H__
 #define __CROSSAPI_H__
 
-#if (defined WIN32)||(defined __WIN32__)||(defined _MSC_VER)
+#if (defined WIN32)||(defined __WIN32__)||(defined _MSC_VER)||(defined __NT__)
 
 #include <windows.h>
 

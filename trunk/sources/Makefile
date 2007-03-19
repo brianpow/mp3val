@@ -13,6 +13,5 @@ crossapi.obj: crossapi.cpp
 crc.obj: crc.cpp crc.h
 	cl /O1 /GX /MD /c crc.cpp
 clean:
-	del *.o
 	del *.exe
 	del *.obj

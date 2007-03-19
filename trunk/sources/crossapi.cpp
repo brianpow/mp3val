@@ -23,7 +23,7 @@ int hFile;
 int hFileMapping;
 int iMappingLength;
 
-#if (defined WIN32)||(defined __WIN32__)||(defined __MSC_VER)
+#if (defined WIN32)||(defined __WIN32__)||(defined _MSC_VER)||(defined __NT__)
 
 #include <windows.h>
 
