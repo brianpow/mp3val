@@ -3,8 +3,6 @@
 
 #define OPENFILENAME_BUFSIZE 65536
 
-#define _WIN32_IE 0x0400
-
 #include "base.h"
 #include <windows.h>
 #include <commctrl.h>
