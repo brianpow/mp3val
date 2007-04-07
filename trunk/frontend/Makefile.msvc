@@ -1,19 +1,19 @@
 mp3val-frontend.exe: main.obj commands.obj main.res listman.obj scandir.obj scanlist.obj spawn.obj
-	cl /MD /mwindows main.obj commands.obj main.res listman.obj scandir.obj scanlist.obj spawn.obj gdi32.lib user32.lib comdlg32.lib shell32.lib comctl32.lib ole32.lib /Femp3val-frontend.exe
+	cl /mwindows main.obj commands.obj main.res listman.obj scandir.obj scanlist.obj spawn.obj gdi32.lib user32.lib comdlg32.lib shell32.lib comctl32.lib ole32.lib /Femp3val-frontend.exe
 main.obj: main.cpp resource.h commands.h listman.h base.h scandir.h scanlist.h spawn.h
-	cl /MD /c main.cpp /Fomain.obj
+	cl /c main.cpp /Fomain.obj
 commands.obj: commands.cpp resource.h commands.h listman.h base.h scandir.h scanlist.h spawn.h
-	cl /MD /c commands.cpp /Focommands.obj
+	cl /c commands.cpp /Focommands.obj
 listman.obj: listman.cpp resource.h commands.h listman.h base.h scandir.h scanlist.h spawn.h
-	cl /MD /c listman.cpp /Folistman.obj
+	cl /c listman.cpp /Folistman.obj
 main.res: main.rc resource.h
 	rc main.rc
 scandir.obj: scandir.cpp resource.h commands.h listman.h base.h scandir.h scanlist.h spawn.h
-	cl /MD /c scandir.cpp /Foscandir.obj
+	cl /c scandir.cpp /Foscandir.obj
 scanlist.obj: scanlist.cpp resource.h commands.h listman.h base.h scandir.h scanlist.h spawn.h
-	cl /MD /c scanlist.cpp /Foscanlist.obj
+	cl /c scanlist.cpp /Foscanlist.obj
 spawn.obj: spawn.cpp resource.h commands.h listman.h base.h scandir.h scanlist.h spawn.h
-	cl /MD /c spawn.cpp /Fospawn.obj
+	cl /c spawn.cpp /Fospawn.obj
 
 clean:
 	del *.obj
