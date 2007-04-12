@@ -1,18 +1,20 @@
-mp3val-frontend.exe: main.obj commands.obj main.rc listman.obj scandir.obj scanlist.obj spawn.obj
-	wcl386 -l=nt_win main.obj commands.obj listman.obj scandir.obj scanlist.obj spawn.obj gdi32.lib user32.lib comdlg32.lib shell32.lib comctl32.lib ole32.lib -fe=mp3val-frontend.exe
+mp3val-frontend.exe: main.obj commands.obj listman.obj scandir.obj scanlist.obj spawn.obj strings.obj
+	wcl386 -l=nt_win main.obj commands.obj listman.obj scandir.obj scanlist.obj spawn.obj strings.obj gdi32.lib user32.lib comdlg32.lib shell32.lib comctl32.lib ole32.lib -fe=mp3val-frontend.exe
 	wrc main.rc mp3val-frontend.exe
-main.obj: main.cpp resource.h commands.h listman.h base.h scandir.h scanlist.h spawn.h
+main.obj: main.cpp resource.h commands.h listman.h base.h scandir.h scanlist.h spawn.h strings.h
 	wcl386 -c main.cpp
-commands.obj: commands.cpp resource.h commands.h listman.h base.h scandir.h scanlist.h spawn.h
+commands.obj: commands.cpp resource.h commands.h listman.h base.h scandir.h scanlist.h spawn.h strings.h
 	wcl386 -c commands.cpp
-listman.obj: listman.cpp resource.h commands.h listman.h base.h scandir.h scanlist.h spawn.h
+listman.obj: listman.cpp resource.h commands.h listman.h base.h scandir.h scanlist.h spawn.h strings.h
 	wcl386 -c listman.cpp
-scandir.obj: scandir.cpp resource.h commands.h listman.h base.h scandir.h scanlist.h spawn.h
+scandir.obj: scandir.cpp resource.h commands.h listman.h base.h scandir.h scanlist.h spawn.h strings.h
 	wcl386 -c scandir.cpp
-scanlist.obj: scanlist.cpp resource.h commands.h listman.h base.h scandir.h scanlist.h spawn.h
+scanlist.obj: scanlist.cpp resource.h commands.h listman.h base.h scandir.h scanlist.h spawn.h strings.h
 	wcl386 -c scanlist.cpp
-spawn.obj: spawn.cpp resource.h commands.h listman.h base.h scandir.h scanlist.h spawn.h
+spawn.obj: spawn.cpp resource.h commands.h listman.h base.h scandir.h scanlist.h spawn.h strings.h
 	wcl386 -c spawn.cpp
+strings.obj: strings.cpp resource.h commands.h listman.h base.h scandir.h scanlist.h spawn.h strings.h
+	wcl386 -c strings.cpp
 
 clean:
 	del *.obj

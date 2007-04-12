@@ -1,19 +1,21 @@
-mp3val-frontend.exe: main.obj commands.obj main.res listman.obj scandir.obj scanlist.obj spawn.obj
-	cl /mwindows main.obj commands.obj main.res listman.obj scandir.obj scanlist.obj spawn.obj gdi32.lib user32.lib comdlg32.lib shell32.lib comctl32.lib ole32.lib /Femp3val-frontend.exe
-main.obj: main.cpp resource.h commands.h listman.h base.h scandir.h scanlist.h spawn.h
+mp3val-frontend.exe: main.obj commands.obj listman.obj scandir.obj scanlist.obj spawn.obj strings.obj main.res
+	cl /mwindows main.obj commands.obj main.res listman.obj scandir.obj scanlist.obj spawn.obj strings.obj gdi32.lib user32.lib comdlg32.lib shell32.lib comctl32.lib ole32.lib /Femp3val-frontend.exe
+main.obj: main.cpp resource.h commands.h listman.h base.h scandir.h scanlist.h spawn.h strings.h
 	cl /c main.cpp /Fomain.obj
-commands.obj: commands.cpp resource.h commands.h listman.h base.h scandir.h scanlist.h spawn.h
+commands.obj: commands.cpp resource.h commands.h listman.h base.h scandir.h scanlist.h spawn.h strings.h
 	cl /c commands.cpp /Focommands.obj
-listman.obj: listman.cpp resource.h commands.h listman.h base.h scandir.h scanlist.h spawn.h
+listman.obj: listman.cpp resource.h commands.h listman.h base.h scandir.h scanlist.h spawn.h strings.h
 	cl /c listman.cpp /Folistman.obj
 main.res: main.rc resource.h
 	rc main.rc
-scandir.obj: scandir.cpp resource.h commands.h listman.h base.h scandir.h scanlist.h spawn.h
+scandir.obj: scandir.cpp resource.h commands.h listman.h base.h scandir.h scanlist.h spawn.h strings.h
 	cl /c scandir.cpp /Foscandir.obj
-scanlist.obj: scanlist.cpp resource.h commands.h listman.h base.h scandir.h scanlist.h spawn.h
+scanlist.obj: scanlist.cpp resource.h commands.h listman.h base.h scandir.h scanlist.h spawn.h strings.h
 	cl /c scanlist.cpp /Foscanlist.obj
-spawn.obj: spawn.cpp resource.h commands.h listman.h base.h scandir.h scanlist.h spawn.h
+spawn.obj: spawn.cpp resource.h commands.h listman.h base.h scandir.h scanlist.h spawn.h strings.h
 	cl /c spawn.cpp /Fospawn.obj
+strings.obj: strings.cpp resource.h commands.h listman.h base.h scandir.h scanlist.h spawn.h strings.h
+	cl /c strings.cpp /Fostrings.obj
 
 clean:
 	del *.obj

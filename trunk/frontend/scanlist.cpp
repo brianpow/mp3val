@@ -30,6 +30,7 @@ int ScanList(HWND hListView, CFileList* plist, bool selected, bool fix) {
 	int state;
 	LVITEM lvItem;
 	int pos_cor;
+	int iProcessed=0;
 	
 	if(!fix) res=MySpawner.SpawnProcess("mp3val.exe -p");
 	else res=MySpawner.SpawnProcess("mp3val.exe -f -p");
@@ -62,6 +63,7 @@ int ScanList(HWND hListView, CFileList* plist, bool selected, bool fix) {
 				ListView_EnsureVisible(hListView,i,TRUE);
 				HandleSelectionChange(i);
 			}
+			iProcessed++;
 		}
 	}
 	
@@ -69,8 +71,11 @@ int ScanList(HWND hListView, CFileList* plist, bool selected, bool fix) {
 	
 	if(!bClicked) SendMessage(hEdit,WM_SETTEXT,(WPARAM)0,(LPARAM)"Scanning completed!");
 	
-	if(!fix) MessageBox(GetParent(hListView),"Scan completed","MP3val-frontend",MB_OK|MB_ICONINFORMATION);
-	else MessageBox(GetParent(hListView),"Scan and repair completed","MP3val-frontend",MB_OK|MB_ICONINFORMATION);
+	if(!iProcessed) MessageBox(GetParent(hListView),"Nothing to scan","MP3val-frontend",MB_OK|MB_ICONWARNING);
+	else {
+		if(!fix) MessageBox(GetParent(hListView),"Scan completed","MP3val-frontend",MB_OK|MB_ICONINFORMATION);
+		else MessageBox(GetParent(hListView),"Scan and repair completed","MP3val-frontend",MB_OK|MB_ICONINFORMATION);
+	}
 	
 	if(iViewMode) RefreshView(iViewMode);
 	

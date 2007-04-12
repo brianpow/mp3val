@@ -1,0 +1,9 @@
+#ifndef MP3VAL_FRONTEND_STRINGS
+#define MP3VAL_FRONTEND_STRINGS
+
+extern char STR_TOOLTIP_ADDFILE[];
+extern char STR_TOOLTIP_ADDDIR[];
+extern char STR_TOOLTIP_DELETE[];
+extern char STR_TOOLTIP_SCANALL[];
+
+#endif

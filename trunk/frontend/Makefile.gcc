@@ -1,20 +1,22 @@
-mp3val-frontend.exe: main.o commands.o resource.o listman.o scandir.o scanlist.o spawn.o
-	g++ -Wall -mwindows main.o commands.o resource.o listman.o scandir.o scanlist.o spawn.o -lcomctl32 -lole32 -o mp3val-frontend.exe
+mp3val-frontend.exe: main.o commands.o listman.o scandir.o scanlist.o spawn.o strings.o resource.o
+	g++ -Wall -mwindows main.o commands.o resource.o listman.o scandir.o scanlist.o spawn.o strings.o -lcomctl32 -lole32 -o mp3val-frontend.exe
 	strip mp3val-frontend.exe
-main.o: main.cpp resource.h commands.h listman.h base.h scandir.h scanlist.h spawn.h
+main.o: main.cpp resource.h commands.h listman.h base.h scandir.h scanlist.h spawn.h strings.h
 	g++ -Wall -c main.cpp -o main.o
-commands.o: commands.cpp resource.h commands.h listman.h base.h scandir.h scanlist.h spawn.h
+commands.o: commands.cpp resource.h commands.h listman.h base.h scandir.h scanlist.h spawn.h strings.h
 	g++ -Wall -c commands.cpp -o commands.o
-listman.o: listman.cpp resource.h commands.h listman.h base.h scandir.h scanlist.h spawn.h
+listman.o: listman.cpp resource.h commands.h listman.h base.h scandir.h scanlist.h spawn.h strings.h
 	g++ -Wall -c listman.cpp -o listman.o
+scandir.o: scandir.cpp resource.h commands.h listman.h base.h scandir.h scanlist.h spawn.h strings.h
+	g++ -Wall -c scandir.cpp -o scandir.o
+scanlist.o: scanlist.cpp resource.h commands.h listman.h base.h scandir.h scanlist.h spawn.h strings.h
+	g++ -Wall -c scanlist.cpp -o scanlist.o
+spawn.o: spawn.cpp resource.h commands.h listman.h base.h scandir.h scanlist.h spawn.h strings.h
+	g++ -Wall -c spawn.cpp -o spawn.o
+strings.o: strings.cpp strings.h
+	g++ -Wall -c strings.cpp -o strings.o
 resource.o: main.rc resource.h
 	windres main.rc -o resource.o
-scandir.o: scandir.cpp resource.h commands.h listman.h base.h scandir.h scanlist.h spawn.h
-	g++ -Wall -c scandir.cpp -o scandir.o
-scanlist.o: scanlist.cpp resource.h commands.h listman.h base.h scandir.h scanlist.h spawn.h
-	g++ -Wall -c scanlist.cpp -o scanlist.o
-spawn.o: spawn.cpp resource.h commands.h listman.h base.h scandir.h scanlist.h spawn.h
-	g++ -Wall -c spawn.cpp -o spawn.o
 
 clean:
 	rm *.o

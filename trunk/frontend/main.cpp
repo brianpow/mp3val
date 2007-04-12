@@ -26,6 +26,7 @@
 #include "commands.h"
 #include "listman.h"
 #include "resource.h"
+#include "strings.h"
 
 HWND hWnd,hListView,hEdit,hProgress,hToolbar;
 HMENU hViewMenu,hPopup;
@@ -111,13 +112,17 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
 		hListView=CreateWindow(WC_LISTVIEW,"",WS_CHILD|WS_VISIBLE|LVS_REPORT|WS_VSCROLL|WS_HSCROLL,0,0,10,10,hWnd,NULL,GetModuleHandle(NULL),NULL);
 		hEdit=CreateWindow("Edit","",WS_CHILD|WS_VISIBLE|ES_LEFT|ES_MULTILINE|ES_AUTOVSCROLL|ES_READONLY|WS_VSCROLL,0,0,100,100,hWnd,NULL,GetModuleHandle(NULL),NULL);
 		hProgress=CreateWindow(PROGRESS_CLASS,"",WS_CHILD|WS_VISIBLE,0,0,100,100,hWnd,NULL,GetModuleHandle(NULL),NULL);
-//		hToolbar=CreateWindow(TOOLBARCLASSNAME,"",WS_CHILD|WS_VISIBLE,0,0,100,100,hWnd,NULL,GetModuleHandle(NULL),NULL);
+		hToolbar=CreateWindow(TOOLBARCLASSNAME,"",TBSTYLE_TOOLTIPS|WS_CHILD|WS_VISIBLE,0,0,100,100,hWnd,NULL,GetModuleHandle(NULL),NULL);
+
 		ArrangeWindows();
+
 		InitListView();
 		InitEdit();
 		InitProgressBar();
-//		InitToolBar();
+		InitToolBar();
+
 		InitCommands();
+
 		hViewMenu=GetSubMenu(GetMenu(hWnd),2);
 		StdListViewProc=(WNDPROC)SetWindowLongPtr(hListView,GWLP_WNDPROC,(LONG_PTR)ListViewSubclassingProc);
 		DragAcceptFiles(hWnd,TRUE);
@@ -199,8 +204,24 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
 				HandleListViewRClick((LPNMITEMACTIVATE)pnmhdr);
 				return 0;
 			case LVN_ITEMCHANGED:
-//				HandleSelectionChange(-1);
 				return 0;
+			}
+		}
+		else if(pnmhdr->code==TTN_GETDISPINFO) {
+			LPNMTTDISPINFO(pnmhdr)->hinst=NULL;
+			switch(pnmhdr->idFrom) {
+			case IDM_FILE_ADDFILE:
+				LPNMTTDISPINFO(pnmhdr)->lpszText=STR_TOOLTIP_ADDFILE;
+				break;
+			case IDM_FILE_ADDDIR:
+				LPNMTTDISPINFO(pnmhdr)->lpszText=STR_TOOLTIP_ADDDIR;
+				break;
+			case IDM_ACTIONS_REMOVE:
+				LPNMTTDISPINFO(pnmhdr)->lpszText=STR_TOOLTIP_DELETE;
+				break;
+			case IDM_ACTIONS_SCANALL:
+				LPNMTTDISPINFO(pnmhdr)->lpszText=STR_TOOLTIP_SCANALL;
+				break;
 			}
 		}
 		return 0;
@@ -224,7 +245,7 @@ int ArrangeWindows() {
 	w=r.right;
 	h=r.bottom;
 
-	MoveWindow(hListView,4,4,w-8,h-12-150,TRUE);
+	MoveWindow(hListView,4,28,w-8,h-12-170,TRUE);
 	MoveWindow(hEdit,4,h-4-146,w-8,125,TRUE);
 	MoveWindow(hProgress,4,h-19,w-8,15,TRUE);
 	
@@ -310,36 +331,57 @@ int InitProgressBar() {
 
 int InitToolBar() {
 	TBADDBITMAP tbab;
-	TBBUTTON tbb;
-	int res;
+	TBBUTTON tbb[5];
+	int i=0;
 	
-	res=SendMessage(hToolbar,TB_BUTTONSTRUCTSIZE,(WPARAM)sizeof(TBBUTTON),(LPARAM)0);
-	if(res) {
-		MessageBeep(0);
-	}
+	SendMessage(hToolbar,TB_BUTTONSTRUCTSIZE,(WPARAM)sizeof(TBBUTTON),(LPARAM)0);
 	
-	tbab.hInst=(HINSTANCE)IDB_STD_LARGE_COLOR;
-	tbab.nID=STD_FILEOPEN;
-	res=SendMessage(hToolbar,TB_ADDBITMAP,(WPARAM)1,(LPARAM)&tbab);
-	if(res) {
-		MessageBeep(0);
-	}
+	tbab.hInst=HINST_COMMCTRL;
+	tbab.nID=IDB_STD_SMALL_COLOR;
+	SendMessage(hToolbar,TB_ADDBITMAP,(WPARAM)1,(LPARAM)&tbab);
+	
+	tbb[i].iBitmap=STD_FILENEW;
+	tbb[i].idCommand=IDM_FILE_ADDFILE;
+	tbb[i].fsState=TBSTATE_ENABLED;
+	tbb[i].fsStyle=TBSTYLE_BUTTON;
+	tbb[i].dwData=0;
+	tbb[i].iString=0;
+	i++;
 
-	tbb.iBitmap=0;
-	tbb.idCommand=IDM_FILE_ADDDIR;
-	tbb.fsState=TBSTATE_ENABLED;
-	tbb.fsStyle=TBSTYLE_BUTTON;
-	tbb.dwData=0;
-	tbb.iString=0;
+	tbb[i].iBitmap=STD_FILEOPEN;
+	tbb[i].idCommand=IDM_FILE_ADDDIR;
+	tbb[i].fsState=TBSTATE_ENABLED;
+	tbb[i].fsStyle=TBSTYLE_BUTTON;
+	tbb[i].dwData=0;
+	tbb[i].iString=0;
+	i++;
 	
-	res=SendMessage(hToolbar,TB_ADDBUTTONS,(WPARAM)1,(LPARAM)&tbb);
-	if(res) {
-		MessageBeep(0);
-	}
-	res=SendMessage(hToolbar,TB_AUTOSIZE,(WPARAM)0,(LPARAM)0);
-	if(res) {
-		MessageBeep(0);
-	}
+	tbb[i].iBitmap=0;
+	tbb[i].idCommand=0;
+	tbb[i].fsState=TBSTATE_ENABLED;
+	tbb[i].fsStyle=BTNS_SEP;
+	tbb[i].dwData=0;
+	tbb[i].iString=0;
+	i++;
+	
+	tbb[i].iBitmap=STD_DELETE;
+	tbb[i].idCommand=IDM_ACTIONS_REMOVE;
+	tbb[i].fsState=TBSTATE_ENABLED;
+	tbb[i].fsStyle=TBSTYLE_BUTTON;
+	tbb[i].dwData=0;
+	tbb[i].iString=0;
+	i++;
+	
+	tbb[i].iBitmap=STD_FIND;
+	tbb[i].idCommand=IDM_ACTIONS_SCANALL;
+	tbb[i].fsState=TBSTATE_ENABLED;
+	tbb[i].fsStyle=TBSTYLE_BUTTON;
+	tbb[i].dwData=0;
+	tbb[i].iString=0;
+	
+	SendMessage(hToolbar,TB_ADDBUTTONS,(WPARAM)5,(LPARAM)&tbb);
+	SendMessage(hToolbar,TB_SETINDENT,(WPARAM)4,(LPARAM)0);
+	SendMessage(hToolbar,TB_AUTOSIZE,(WPARAM)0,(LPARAM)0);
 	
 	return 0;
 }
