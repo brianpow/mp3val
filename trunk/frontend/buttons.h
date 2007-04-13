@@ -17,22 +17,16 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef __SCANLIST_H__
-#define __SCANLIST_H__
+#ifndef __BUTTONS_H__
+#define __BUTTONS_H__
 
-#include <windows.h>
-#include "listman.h"
-#include "spawn.h"
-
-struct ScanListPars {
-	HWND hListView;
-	CFileList *plist;
-	bool selected;
-	bool fix;
-};
-
-DWORD WINAPI ScanListWrapper(LPVOID p);
-int ScanList(HWND hListView, CFileList* plist, bool selected, bool fix);
-int ScanFile(int i,CFileList *plist,CSpawner *pSpawner, bool fix);
+#define TOOLBAR_IMAGE_ADDFILE 0
+#define TOOLBAR_IMAGE_ADDDIR 1
+#define TOOLBAR_IMAGE_DELSEL 2
+#define TOOLBAR_IMAGE_CLEAR 3
+#define TOOLBAR_IMAGE_SCANALL 4
+#define TOOLBAR_IMAGE_FIXALL 5
+#define TOOLBAR_IMAGE_STOP 6
+#define TOOLBAR_IMAGE_HELP 7
 
 #endif

@@ -1,7 +1,7 @@
 mp3val-frontend.exe: main.o commands.o listman.o scandir.o scanlist.o spawn.o strings.o resource.o
 	g++ -Wall -mwindows main.o commands.o resource.o listman.o scandir.o scanlist.o spawn.o strings.o -lcomctl32 -lole32 -o mp3val-frontend.exe
 	strip mp3val-frontend.exe
-main.o: main.cpp resource.h commands.h listman.h base.h scandir.h scanlist.h spawn.h strings.h
+main.o: main.cpp resource.h commands.h listman.h base.h scandir.h scanlist.h spawn.h strings.h buttons.h
 	g++ -Wall -c main.cpp -o main.o
 commands.o: commands.cpp resource.h commands.h listman.h base.h scandir.h scanlist.h spawn.h strings.h
 	g++ -Wall -c commands.cpp -o commands.o

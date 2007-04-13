@@ -1,5 +1,5 @@
 /*
- * MP3valGUI - a frontend for MP3val program
+ * MP3val-frontend - a frontend for MP3val program
  * Copyright (C) 2005-2006 Alexey Kuznetsov (ring0)
  *
  * This program is free software; you can redistribute it and/or modify
@@ -27,6 +27,7 @@
 #include "listman.h"
 #include "resource.h"
 #include "strings.h"
+#include "buttons.h"
 
 HWND hWnd,hListView,hEdit,hProgress,hToolbar;
 HMENU hViewMenu,hPopup;
@@ -109,8 +110,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
 	switch(message) {
 	case WM_CREATE:
 		::hWnd=hWnd;
-		hListView=CreateWindow(WC_LISTVIEW,"",WS_CHILD|WS_VISIBLE|LVS_REPORT|WS_VSCROLL|WS_HSCROLL,0,0,10,10,hWnd,NULL,GetModuleHandle(NULL),NULL);
-		hEdit=CreateWindow("Edit","",WS_CHILD|WS_VISIBLE|ES_LEFT|ES_MULTILINE|ES_AUTOVSCROLL|ES_READONLY|WS_VSCROLL,0,0,100,100,hWnd,NULL,GetModuleHandle(NULL),NULL);
+		hListView=CreateWindowEx(WS_EX_CLIENTEDGE,WC_LISTVIEW,"",WS_CHILD|WS_VISIBLE|LVS_REPORT|WS_VSCROLL|WS_HSCROLL,0,0,10,10,hWnd,NULL,GetModuleHandle(NULL),NULL);
+		hEdit=CreateWindowEx(WS_EX_CLIENTEDGE,"Edit","",WS_CHILD|WS_VISIBLE|ES_LEFT|ES_MULTILINE|ES_AUTOVSCROLL|ES_READONLY|WS_VSCROLL,0,0,100,100,hWnd,NULL,GetModuleHandle(NULL),NULL);
 		hProgress=CreateWindow(PROGRESS_CLASS,"",WS_CHILD|WS_VISIBLE,0,0,100,100,hWnd,NULL,GetModuleHandle(NULL),NULL);
 		hToolbar=CreateWindow(TOOLBARCLASSNAME,"",TBSTYLE_TOOLTIPS|WS_CHILD|WS_VISIBLE,0,0,100,100,hWnd,NULL,GetModuleHandle(NULL),NULL);
 
@@ -216,11 +217,26 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
 			case IDM_FILE_ADDDIR:
 				LPNMTTDISPINFO(pnmhdr)->lpszText=STR_TOOLTIP_ADDDIR;
 				break;
+			
 			case IDM_ACTIONS_REMOVE:
 				LPNMTTDISPINFO(pnmhdr)->lpszText=STR_TOOLTIP_DELETE;
 				break;
+			case IDM_ACTIONS_CLEAR:
+				LPNMTTDISPINFO(pnmhdr)->lpszText=STR_TOOLTIP_CLEAR;
+				break;
+
 			case IDM_ACTIONS_SCANALL:
 				LPNMTTDISPINFO(pnmhdr)->lpszText=STR_TOOLTIP_SCANALL;
+				break;
+			case IDM_ACTIONS_FIX_PROBLEMS:
+				LPNMTTDISPINFO(pnmhdr)->lpszText=STR_TOOLTIP_FIXALL;
+				break;
+			case IDM_ACTIONS_STOPSCAN:
+				LPNMTTDISPINFO(pnmhdr)->lpszText=STR_TOOLTIP_STOP;
+				break;
+			
+			default:
+				LPNMTTDISPINFO(pnmhdr)->lpszText=STR_TOOLTIP_HELP;
 				break;
 			}
 		}
@@ -331,16 +347,16 @@ int InitProgressBar() {
 
 int InitToolBar() {
 	TBADDBITMAP tbab;
-	TBBUTTON tbb[5];
+	TBBUTTON tbb[11];
 	int i=0;
 	
 	SendMessage(hToolbar,TB_BUTTONSTRUCTSIZE,(WPARAM)sizeof(TBBUTTON),(LPARAM)0);
 	
-	tbab.hInst=HINST_COMMCTRL;
-	tbab.nID=IDB_STD_SMALL_COLOR;
-	SendMessage(hToolbar,TB_ADDBITMAP,(WPARAM)1,(LPARAM)&tbab);
+	tbab.hInst=GetModuleHandle(NULL);
+	tbab.nID=IDB_TOOLBAR;
+	SendMessage(hToolbar,TB_ADDBITMAP,(WPARAM)8,(LPARAM)&tbab);
 	
-	tbb[i].iBitmap=STD_FILENEW;
+	tbb[i].iBitmap=TOOLBAR_IMAGE_ADDFILE;
 	tbb[i].idCommand=IDM_FILE_ADDFILE;
 	tbb[i].fsState=TBSTATE_ENABLED;
 	tbb[i].fsStyle=TBSTYLE_BUTTON;
@@ -348,7 +364,7 @@ int InitToolBar() {
 	tbb[i].iString=0;
 	i++;
 
-	tbb[i].iBitmap=STD_FILEOPEN;
+	tbb[i].iBitmap=TOOLBAR_IMAGE_ADDDIR;
 	tbb[i].idCommand=IDM_FILE_ADDDIR;
 	tbb[i].fsState=TBSTATE_ENABLED;
 	tbb[i].fsStyle=TBSTYLE_BUTTON;
@@ -364,7 +380,7 @@ int InitToolBar() {
 	tbb[i].iString=0;
 	i++;
 	
-	tbb[i].iBitmap=STD_DELETE;
+	tbb[i].iBitmap=TOOLBAR_IMAGE_DELSEL;
 	tbb[i].idCommand=IDM_ACTIONS_REMOVE;
 	tbb[i].fsState=TBSTATE_ENABLED;
 	tbb[i].fsStyle=TBSTYLE_BUTTON;
@@ -372,14 +388,62 @@ int InitToolBar() {
 	tbb[i].iString=0;
 	i++;
 	
-	tbb[i].iBitmap=STD_FIND;
+	tbb[i].iBitmap=TOOLBAR_IMAGE_CLEAR;
+	tbb[i].idCommand=IDM_ACTIONS_CLEAR;
+	tbb[i].fsState=TBSTATE_ENABLED;
+	tbb[i].fsStyle=TBSTYLE_BUTTON;
+	tbb[i].dwData=0;
+	tbb[i].iString=0;
+	i++;
+
+	tbb[i].iBitmap=0;
+	tbb[i].idCommand=0;
+	tbb[i].fsState=TBSTATE_ENABLED;
+	tbb[i].fsStyle=BTNS_SEP;
+	tbb[i].dwData=0;
+	tbb[i].iString=0;
+	i++;
+	
+	tbb[i].iBitmap=TOOLBAR_IMAGE_SCANALL;
 	tbb[i].idCommand=IDM_ACTIONS_SCANALL;
 	tbb[i].fsState=TBSTATE_ENABLED;
 	tbb[i].fsStyle=TBSTYLE_BUTTON;
 	tbb[i].dwData=0;
 	tbb[i].iString=0;
+	i++;
+
+	tbb[i].iBitmap=TOOLBAR_IMAGE_FIXALL;
+	tbb[i].idCommand=IDM_ACTIONS_FIX_PROBLEMS;
+	tbb[i].fsState=TBSTATE_ENABLED;
+	tbb[i].fsStyle=TBSTYLE_BUTTON;
+	tbb[i].dwData=0;
+	tbb[i].iString=0;
+	i++;
 	
-	SendMessage(hToolbar,TB_ADDBUTTONS,(WPARAM)5,(LPARAM)&tbb);
+	tbb[i].iBitmap=TOOLBAR_IMAGE_STOP;
+	tbb[i].idCommand=IDM_ACTIONS_STOPSCAN;
+	tbb[i].fsState=TBSTATE_ENABLED;
+	tbb[i].fsStyle=TBSTYLE_BUTTON;
+	tbb[i].dwData=0;
+	tbb[i].iString=0;
+	i++;
+	
+	tbb[i].iBitmap=0;
+	tbb[i].idCommand=0;
+	tbb[i].fsState=TBSTATE_ENABLED;
+	tbb[i].fsStyle=BTNS_SEP;
+	tbb[i].dwData=0;
+	tbb[i].iString=0;
+	i++;
+
+	tbb[i].iBitmap=TOOLBAR_IMAGE_HELP;
+	tbb[i].idCommand=IDM_HELP_ABOUT;
+	tbb[i].fsState=TBSTATE_ENABLED;
+	tbb[i].fsStyle=TBSTYLE_BUTTON;
+	tbb[i].dwData=0;
+	tbb[i].iString=0;
+	
+	SendMessage(hToolbar,TB_ADDBUTTONS,(WPARAM)11,(LPARAM)&tbb);
 	SendMessage(hToolbar,TB_SETINDENT,(WPARAM)4,(LPARAM)0);
 	SendMessage(hToolbar,TB_AUTOSIZE,(WPARAM)0,(LPARAM)0);
 	
