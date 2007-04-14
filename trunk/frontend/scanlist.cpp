@@ -71,13 +71,13 @@ int ScanList(HWND hListView, CFileList* plist, bool selected, bool fix) {
 			plist->changestate(iViewMode,i-pos_cor,state);
 			if(state!=iViewMode&&iViewMode) pos_cor++;
 			SendMessage(hProgress,PBM_STEPIT,0,0);
-//			if(!iViewMode) {
-				lvItem.mask=LVIF_TEXT;
-				lvItem.iItem=i;
-				lvItem.iSubItem=1;
-				lvItem.pszText=szStates[state];
-				SendMessage(hListView,LVM_SETITEM,0,(LPARAM)&lvItem);
-//			}
+			
+			lvItem.mask=LVIF_TEXT;
+			lvItem.iItem=i;
+			lvItem.iSubItem=1;
+			lvItem.pszText=szStates[state];
+			SendMessage(hListView,LVM_SETITEM,0,(LPARAM)&lvItem);
+
 			if(!bClicked) {
 				ListView_EnsureVisible(hListView,i,TRUE);
 				HandleSelectionChange(i);
@@ -88,7 +88,7 @@ int ScanList(HWND hListView, CFileList* plist, bool selected, bool fix) {
 	
 	MySpawner.DespawnProcess();
 	
-	if(!bClicked) SendMessage(hEdit,WM_SETTEXT,(WPARAM)0,(LPARAM)"Scanning completed!");
+	if(!bClicked&&iProcessed) SendMessage(hEdit,WM_SETTEXT,(WPARAM)0,(LPARAM)"Scanning completed!");
 	
 	if(!iProcessed) MessageBox(GetParent(hListView),"Nothing to scan","MP3val-frontend",MB_OK|MB_ICONWARNING);
 	else {

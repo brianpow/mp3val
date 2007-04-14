@@ -301,8 +301,6 @@ int DoActionsScan(bool selection,bool fix) {
 	pars.selected=selection;
 	pars.fix=fix;
 	
-	SendMessage(hEdit,WM_SETTEXT,(WPARAM)0,(LPARAM)"Scanning in progress...");
-	
 	if(hThread) {
 		GetExitCodeThread(hThread,&dwExitCode);
 		if(dwExitCode!=STILL_ACTIVE) {
@@ -315,7 +313,6 @@ int DoActionsScan(bool selection,bool fix) {
 		}
 	}
 	
-//	ScanList(hListView,&list,selection);
 	hThread=CreateThread(NULL,0,ScanListWrapper,&pars,0,&dwThreadId);
 	return 0;
 }
