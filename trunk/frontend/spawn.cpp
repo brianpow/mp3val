@@ -60,6 +60,8 @@ int CSpawner::DespawnProcess() {
 	CloseHandle(hStdoutRead);
 	CloseHandle(hStdoutWrite);
 	
+	created=false;
+	
 	return 0;
 }
 
