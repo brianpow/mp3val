@@ -26,12 +26,30 @@
 
 #define CROSSAPI_MAX_PATH MAX_PATH
 
+struct CROSSAPI_FILE_ATTRIBUTES {
+	DWORD dwAttributes;
+	FILETIME ftCreation;
+	FILETIME ftLastAccess;
+	FILETIME ftLastWrite;
+};
+
 #else
 
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
 #include <limits.h>
+#include <time.h>
 
 #define CROSSAPI_MAX_PATH PATH_MAX
 typedef unsigned int DWORD;
+
+struct CROSSAPI_FILE_ATTRIBUTES {
+	mode_t st_mode;
+	time_t t_atime;
+	time_t t_mtime;
+	time_t t_ctime;
+};
 
 #endif
 
@@ -69,5 +87,8 @@ int CrossAPI_SetEndOfFile(int iHandle);
 
 void *CrossAPI_MapFile(char *filename);
 int CrossAPI_UnmapFile(void *);
+
+int CrossAPI_GetFileAttr(char *filename,CROSSAPI_FILE_ATTRIBUTES *cfa);
+int CrossAPI_SetFileAttr(char *filename,CROSSAPI_FILE_ATTRIBUTES *cfa,bool timestamp);
 
 #endif

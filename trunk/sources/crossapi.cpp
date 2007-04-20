@@ -140,6 +140,28 @@ int CrossAPI_UnmapFile(void *pImage) {
 	return 0;
 }
 
+int CrossAPI_GetFileAttr(char *filename,CROSSAPI_FILE_ATTRIBUTES *cfa) {
+	HANDLE hFile;
+	cfa->dwAttributes=GetFileAttributes(filename);
+	hFile=CreateFile(filename,GENERIC_READ,FILE_SHARE_READ|FILE_SHARE_WRITE,NULL,OPEN_EXISTING,0,NULL);
+	if(hFile==INVALID_HANDLE_VALUE) return -1;
+	GetFileTime(hFile,&(cfa->ftCreation),&(cfa->ftLastAccess),&(cfa->ftLastWrite));
+	CloseHandle(hFile);
+	
+	return 0;
+}
+
+int CrossAPI_SetFileAttr(char *filename,CROSSAPI_FILE_ATTRIBUTES *cfa,bool timestamp) {
+	HANDLE hFile;
+	SetFileAttributes(filename,cfa->dwAttributes);
+	hFile=CreateFile(filename,FILE_WRITE_ATTRIBUTES,FILE_SHARE_READ|FILE_SHARE_WRITE,NULL,OPEN_EXISTING,0,NULL);
+	if(hFile==INVALID_HANDLE_VALUE) return -1;
+	if(timestamp) SetFileTime(hFile,&(cfa->ftCreation),&(cfa->ftLastAccess),&(cfa->ftLastWrite));
+	CloseHandle(hFile);
+	
+	return 0;
+}
+
 #else
 
 #include <unistd.h>
@@ -154,6 +176,7 @@ int CrossAPI_UnmapFile(void *pImage) {
 #include <stdio.h>
 #include <errno.h>
 #include <math.h>
+#include <utime.h>
 
 #define TMPBUFSIZE 8192
 
@@ -319,6 +342,31 @@ void *CrossAPI_MapFile(char *filename) {
 int CrossAPI_UnmapFile(void *pImage) {
 	munmap(pImage,iRoundedMappingLength);
 	close(hFile);
+	return 0;
+}
+
+int CrossAPI_GetFileAttr(char *filename,CROSSAPI_FILE_ATTRIBUTES *cfa) {
+	struct stat ss;
+	
+	stat(filename,&ss);
+	
+	cfa->st_mode=ss.st_mode;
+	cfa->t_atime=ss.st_atime;
+	cfa->t_mtime=ss.st_mtime;
+	cfa->t_ctime=ss.st_ctime;
+	
+	return 0;
+}
+
+int CrossAPI_SetFileAttr(char *filename,CROSSAPI_FILE_ATTRIBUTES *cfa,bool timestamp) {
+	struct utimbuf su;
+	chmod(filename,cfa->st_mode);
+	
+	if(timestamp) {
+		su.actime=cfa->t_atime;
+		su.modtime=cfa->t_mtime;
+		utime(filename,&su);
+	}
 	return 0;
 }
 

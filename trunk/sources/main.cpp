@@ -34,6 +34,7 @@ bool FixErrors=false;
 bool bSuppressInfo=false;
 bool bPipeMode=false;
 bool bDeleteBaks=false;
+bool bKeepTimestamps=false;
 
 extern int iMappingLength;
 
@@ -72,6 +73,7 @@ int main(int argc, char *argv[]) {
 		cerr<<"\t-l<file name>     write log to the specified file (default: stdout)\n";
 		cerr<<"\t-si               suppress INFO messages\n";
 		cerr<<"\t-nb               delete .bak files (suitable with -f)\n";
+		cerr<<"\t-t                keep file timestamps (suitable with -f)\n";
 		cerr<<"\t-p                pipe mode (receive input file names from stdin)\n";
 		cerr<<"\t-v                print version number and exit\n";
 		cerr<<"\n";
@@ -94,6 +96,9 @@ int main(int argc, char *argv[]) {
 		}
 		else if(!strcmp(argv[i],"-nb")) {
 			bDeleteBaks=true;
+		}
+		else if(!strcmp(argv[i],"-t")) {
+			bKeepTimestamps=true;
 		}
 		else if(!strcmp(argv[i],"-p")) {
 			bPipeMode=true;
@@ -167,6 +172,9 @@ int ProcessFile(char *szFileName,char *szLogFileName) {
 	ofstream log_out;
 	int hData;
 	ostream *out;
+	CROSSAPI_FILE_ATTRIBUTES cfa;
+	
+	CrossAPI_GetFileAttr(szFileName,&cfa);
 	
 	pImage=(unsigned char *)CrossAPI_MapFile(szFileName);
 
@@ -233,6 +241,7 @@ int ProcessFile(char *szFileName,char *szLogFileName) {
 			log_out.close();
 			return 0;
 		}
+		CrossAPI_SetFileAttr(szFileName,&cfa,bKeepTimestamps);
 		if(bDeleteBaks) CrossAPI_DeleteFile((char *)pcBuffer2);
 	}
 
