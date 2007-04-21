@@ -15,3 +15,4 @@ crc.obj: crc.cpp crc.h
 clean:
 	del *.exe
 	del *.obj
+	del *.manifest
