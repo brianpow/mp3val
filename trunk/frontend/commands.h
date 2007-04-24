@@ -43,6 +43,7 @@ int DoActionsStopScan();
 int DoActionsOptions();
 
 int DoViewSetMode(int mode);
+int DoViewFollowScan();
 
 int DoHelpAbout();
 

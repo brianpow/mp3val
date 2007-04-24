@@ -191,6 +191,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
 		case IDM_VIEW_REPAIRED:
 			DoViewSetMode(VM_FIXED);
 			break;
+		case IDM_VIEW_FOLLOWS_SCAN:
+			DoViewFollowScan();
+			break;
 		
 		case IDM_HELP_ABOUT:
 			DoHelpAbout();
@@ -457,6 +460,7 @@ LRESULT CALLBACK ListViewSubclassingProc(HWND hWnd,UINT message,WPARAM wParam,LP
 	
 	if(message==WM_LBUTTONDOWN||message==WM_KEYDOWN) {
 		bClicked=true;
+		CheckMenuItem(hViewMenu,IDM_VIEW_FOLLOWS_SCAN,MF_BYCOMMAND|MF_UNCHECKED);
 		HandleSelectionChange(-1);
 	}
 	return res;

@@ -29,6 +29,7 @@
 #include "scandir.h"
 #include "scanlist.h"
 #include "spawn.h"
+#include "resource.h"
 
 char szBrowseForFolderTitle[]="Choose a folder";
 
@@ -365,6 +366,19 @@ int DoViewSetMode(int mode) {
 		else CheckMenuItem(hViewMenu,i,MF_BYPOSITION|MF_UNCHECKED);
 	}
 	RefreshView(iViewMode);
+	return 0;
+}
+
+int DoViewFollowScan() {
+	if(bClicked) {
+		bClicked=false;
+		CheckMenuItem(hViewMenu,IDM_VIEW_FOLLOWS_SCAN,MF_BYCOMMAND|MF_CHECKED);
+	}
+	else {
+		bClicked=true;
+		CheckMenuItem(hViewMenu,IDM_VIEW_FOLLOWS_SCAN,MF_BYCOMMAND|MF_UNCHECKED);
+	}
+	
 	return 0;
 }
 
