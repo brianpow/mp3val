@@ -6,6 +6,7 @@ CSettings::CSettings() {
 	GetModuleFileName(NULL,szIniFileName,MAX_PATH+1);
 	PathRemoveFileSpec(szIniFileName);
 	lstrcat(szIniFileName,"\\mp3val-frontend.ini");
+	SetFileAttributes(szIniFileName,GetFileAttributes(szIniFileName)&(~FILE_ATTRIBUTE_READONLY));
 	load();
 }
 
