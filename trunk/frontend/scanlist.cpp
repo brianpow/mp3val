@@ -21,6 +21,7 @@
 #include "spawn.h"
 #include "listman.h"
 #include "commands.h"
+#include "settings.h"
 
 #include <commctrl.h>
 
@@ -31,6 +32,7 @@ extern HWND hProgress,hListView,hEdit;
 extern int iViewMode;
 extern bool bClicked;
 extern char *szStates[5];
+extern CSettings options;
 
 DWORD WINAPI ScanListWrapper(LPVOID p) {
 	ScanListPars *pars;
@@ -44,6 +46,7 @@ DWORD WINAPI ScanListWrapper(LPVOID p) {
  */
 
 int ScanList(HWND hListView, CFileList* plist, bool selected, bool fix) {
+	char szCommandLine[256];
 	int res;
 	int i;
 	int state;
@@ -51,8 +54,12 @@ int ScanList(HWND hListView, CFileList* plist, bool selected, bool fix) {
 	int pos_cor;
 	int iProcessed=0;
 	
-	if(!fix) res=MySpawner.SpawnProcess("mp3val.exe -p");
-	else res=MySpawner.SpawnProcess("mp3val.exe -f -p");
+	lstrcpy(szCommandLine,"mp3val.exe -p");
+	if(fix) lstrcat(szCommandLine," -f");
+	if(options.bDeleteBaks) lstrcat(szCommandLine," -nb");
+	if(options.bKeepTimestamps) lstrcat(szCommandLine," -t");
+	
+	res=MySpawner.SpawnProcess(szCommandLine);
 	
 	if(res) {
 		MessageBox(NULL,"Cannot launch mp3val.exe","Error",MB_OK|MB_ICONERROR);

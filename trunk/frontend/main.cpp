@@ -28,9 +28,12 @@
 #include "resource.h"
 #include "strings.h"
 #include "buttons.h"
+#include "settings.h"
 
 HWND hWnd,hListView,hEdit,hProgress,hToolbar;
 HMENU hViewMenu,hPopup;
+
+CSettings options;
 
 bool bClicked=false;
 
