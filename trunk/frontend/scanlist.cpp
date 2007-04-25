@@ -24,6 +24,7 @@
 #include "settings.h"
 
 #include <commctrl.h>
+#include <string.h>
 
 CSpawner MySpawner;
 
@@ -126,7 +127,10 @@ int ScanFile(int i,CFileList *plist,CSpawner *pSpawner,bool fix) {
 	do {
 		pSpawner->readstr(strbuf,2048);
 		fi.proot->addnode(strbuf);
-		if(!memcmp(strbuf,"WARNING",lstrlen("WARNING"))) newstate=ST_PROBLEM;
+		if(!memcmp(strbuf,"WARNING",lstrlen("WARNING"))) {
+			if(!strstr(strbuf,"No supported tags in the file")) newstate=ST_PROBLEM;
+			else if(!(options.bIgnoreMissingTags)) newstate=ST_PROBLEM;
+		}
 		else if(!memcmp(strbuf,"ERROR",lstrlen("ERROR"))) newstate=ST_PROBLEM;
 		else if(!memcmp(strbuf,"FIXED",lstrlen("FIXED"))) newstate=ST_FIXED;
 	} while(lstrcmp(strbuf,"Done!"));
