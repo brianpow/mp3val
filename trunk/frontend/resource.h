@@ -7,6 +7,9 @@
 #define IDI_ICON1                       106
 #define IDM_POPUP                       108
 #define IDB_TOOLBAR                     110
+#define IDD_OPTIONS                     112
+#define IDC_IGNORETAGS                  1000
+#define IDC_DELETEBAKS                  1002
 #define IDM_ACTIONS_CLEAR               40000
 #define IDM_FILE_ADDFILE                40001
 #define IDM_FILE_ADDDIR                 40002
@@ -24,4 +27,5 @@
 #define IDM_ACTIONS_SCANSEL             40402
 #define IDM_ACTIONS_FIXSEL              40403
 #define IDM_ACTIONS_REMOVE              40404
+#define IDC_KEEPTIMESTAMPS              40901
 #define IDM_HELP_ABOUT                  40901

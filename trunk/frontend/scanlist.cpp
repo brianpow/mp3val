@@ -55,9 +55,11 @@ int ScanList(HWND hListView, CFileList* plist, bool selected, bool fix) {
 	int iProcessed=0;
 	
 	lstrcpy(szCommandLine,"mp3val.exe -p");
-	if(fix) lstrcat(szCommandLine," -f");
-	if(options.bDeleteBaks) lstrcat(szCommandLine," -nb");
-	if(options.bKeepTimestamps) lstrcat(szCommandLine," -t");
+	if(fix) {
+		lstrcat(szCommandLine," -f");
+		if(options.bDeleteBaks) lstrcat(szCommandLine," -nb");
+		if(options.bKeepTimestamps) lstrcat(szCommandLine," -t");
+	}
 	
 	res=MySpawner.SpawnProcess(szCommandLine);
 	

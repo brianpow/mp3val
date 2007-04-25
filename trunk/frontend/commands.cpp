@@ -30,6 +30,7 @@
 #include "scanlist.h"
 #include "spawn.h"
 #include "resource.h"
+#include "settings.h"
 
 char szBrowseForFolderTitle[]="Choose a folder";
 
@@ -47,6 +48,7 @@ extern HWND hWnd,hListView,hEdit,hProgress;
 extern HMENU hViewMenu,hPopup;
 extern bool bClicked;
 extern CSpawner MySpawner;
+extern CSettings options;
 ScanListPars pars;
 ScanDirPars scandirpars;
 
@@ -60,6 +62,8 @@ int iViewMode=VM_EVERYTHING;
 
 HANDLE hThread=NULL;
 HANDLE hDirThread=NULL;
+
+BOOL CALLBACK OptionsDlgProc(HWND hDlg,UINT uMsg,WPARAM wParam,LPARAM lParam);
 
 int InitCommands() {
 	char strbuf[2048];
@@ -344,7 +348,7 @@ int DoActionsStopScan() {
 }
 
 int DoActionsOptions() {
-	MessageBox(hWnd,"Options dialog will be here","MP3val-frontend",MB_OK);
+	DialogBox(GetModuleHandle(NULL),MAKEINTRESOURCE(IDD_OPTIONS),hWnd,OptionsDlgProc);
 	return 0;
 }
 
@@ -441,4 +445,42 @@ int CALLBACK BrowseCallbackProc(HWND hWnd,UINT message,LPARAM lParam,LPARAM lpDa
 	}
 	
 	return 0;
+}
+
+BOOL CALLBACK OptionsDlgProc(HWND hDlg,UINT uMsg,WPARAM wParam,LPARAM lParam) {
+	switch(uMsg) {
+	case WM_INITDIALOG:
+		SendMessage(hDlg,WM_SETICON,(WPARAM)ICON_BIG,(LPARAM)LoadIcon(GetModuleHandle(NULL),MAKEINTRESOURCE(IDI_ICON1)));
+		SendMessage(GetDlgItem(hDlg,IDC_DELETEBAKS),BM_SETCHECK,(int)options.bDeleteBaks,0);
+		SendMessage(GetDlgItem(hDlg,IDC_KEEPTIMESTAMPS),BM_SETCHECK,(int)options.bKeepTimestamps,0);
+		SendMessage(GetDlgItem(hDlg,IDC_IGNORETAGS),BM_SETCHECK,(int)options.bIgnoreMissingTags,0);
+		return TRUE;
+	case WM_COMMAND:
+		switch(LOWORD(wParam)) {
+		case IDC_DELETEBAKS:
+		case IDC_KEEPTIMESTAMPS:
+		case IDC_IGNORETAGS:
+			return TRUE;
+		case IDOK:
+			if(SendMessage(GetDlgItem(hDlg,IDC_DELETEBAKS),BM_GETCHECK,0,0)) options.bDeleteBaks=true;
+			else options.bDeleteBaks=false;
+			
+			if(SendMessage(GetDlgItem(hDlg,IDC_KEEPTIMESTAMPS),BM_GETCHECK,0,0)) options.bKeepTimestamps=true;
+			else options.bKeepTimestamps=false;
+			
+			if(SendMessage(GetDlgItem(hDlg,IDC_IGNORETAGS),BM_GETCHECK,0,0)) options.bIgnoreMissingTags=true;
+			else options.bIgnoreMissingTags=false;
+			
+			options.write();
+			
+			EndDialog(hDlg,0);
+			
+			return TRUE;
+		case IDCANCEL:
+			EndDialog(hDlg,0);
+			return TRUE;
+		}
+		return FALSE;
+	}
+	return FALSE;
 }
