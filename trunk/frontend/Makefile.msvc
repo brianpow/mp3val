@@ -1,5 +1,5 @@
 mp3val-frontend.exe: main.obj commands.obj listman.obj scandir.obj scanlist.obj spawn.obj strings.obj main.res settings.obj
-	cl /mwindows main.obj commands.obj main.res listman.obj scandir.obj scanlist.obj spawn.obj strings.obj settings.obj gdi32.lib user32.lib comdlg32.lib shell32.lib comctl32.lib ole32.lib shlwapi.lib /Femp3val-frontend.exe
+	cl main.obj commands.obj main.res listman.obj scandir.obj scanlist.obj spawn.obj strings.obj settings.obj gdi32.lib user32.lib comdlg32.lib shell32.lib comctl32.lib ole32.lib shlwapi.lib /Femp3val-frontend.exe
 main.obj: main.cpp resource.h commands.h listman.h base.h scandir.h scanlist.h spawn.h strings.h buttons.h
 	cl /c main.cpp /Fomain.obj
 commands.obj: commands.cpp resource.h commands.h listman.h base.h scandir.h scanlist.h spawn.h strings.h
