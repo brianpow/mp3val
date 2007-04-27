@@ -387,7 +387,7 @@ int DoViewFollowScan() {
 }
 
 int DoHelpAbout() {
-	MessageBox(hWnd,"MP3val-frontend 0.1.0+ (alpha), (c) Alexey Kuznetsov, 2007\nThis program is in an early development stage. Some important features can be missing. There may be some bugs.","About MP3val-frontend",MB_OK|MB_ICONINFORMATION);
+	MessageBox(hWnd,"MP3val-frontend 0.1.1.\nCopyright (c) Alexey Kuznetsov, 2007\nThis is a BETA release.","About MP3val-frontend",MB_OK|MB_ICONINFORMATION);
 	return 0;
 }
 

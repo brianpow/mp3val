@@ -51,7 +51,7 @@ LRESULT CALLBACK ListViewSubclassingProc(HWND,UINT,WPARAM,LPARAM);
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine, int iCmdShow) {
 	char szAppName[]="MP3Val-frontend";
-	char szMainWindowCaption[]="MP3val-frontend 0.1.0+ (alpha)";
+	char szMainWindowCaption[]="MP3val-frontend 0.1.1";
 	MSG msg;
 	WNDCLASS wndclass;
 	BOOL msgstatus;
