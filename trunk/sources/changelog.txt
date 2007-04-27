@@ -1,3 +1,12 @@
+[0.1.7]
+
+This is mainly a bugfix release. Some issues from Sourceforge bug tracker and from Debian bug tracker have been addressed.
+
+[+] More precise report about CRC.
+[+] A new option added to keep file timestamps.
+[*] Added more accurate handling of write errors (Debian #413946).
+[*] Attributes are now correctly preserved.
+
 [0.1.6]
 
 [+] CRCs are now checked!
