@@ -51,6 +51,7 @@ struct MPEGINFO {
 	int iBytes;
 	bool FramesPresent;
 	int iFrames;
+	int iFirstMPEGFrameSize; //because Foobar2000 doesn't count the first frame (with Xing header) as MPEG data
 
 //Error flags
 	int riff;

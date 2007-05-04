@@ -113,6 +113,7 @@ int ValidateFile(unsigned char *baseptr,int iFileSize,MPEGINFO *mpginfo,ostream 
 				}
 				if(!WasFirstFrame) {
 					WasFirstFrame=true;
+					mpginfo->iFirstMPEGFrameSize=iFrameSize;
 					if(mpginfo->iLastMPEGVersion==1) {
 						if(mpginfo->LastFrameStereo) {
 							iXingOffset=32;

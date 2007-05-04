@@ -78,12 +78,19 @@ int PrintReport(ostream *out,char *filename,MPEGINFO *mpginfo) {
  * Some other encoders seem to write TotalFrames as this value.
  * We'll consider both first and second methods right.
  */
+
+/*
+ * Foobar2000 (at least version 0.9.4) doesn't count the first frame (with Xing header) as MPEG data when fixing VBR header.
+ * LAME does the other way round.
+ * We'll consider both first and second methods right.
+ */
+
 			if(mpginfo->FramesPresent&&mpginfo->iFrames!=mpeg_total&&mpginfo->iFrames+1!=mpeg_total) {
 				sprintf(szMsgBuf,"Wrong number of MPEG frames specified in Xing header (%d instead of %d)",mpginfo->iFrames,mpeg_total);
 				PrintMessage(out,"WARNING",filename,szMsgBuf,-1);
 				mpginfo->iErrors++;
 			}
-			if(mpginfo->BytesPresent&&mpginfo->iBytes!=mpginfo->iTotalMPEGBytes) {
+			if(mpginfo->BytesPresent&&mpginfo->iBytes!=mpginfo->iTotalMPEGBytes&&mpginfo->iBytes!=mpginfo->iTotalMPEGBytes-mpginfo->iFirstMPEGFrameSize) {
 				sprintf(szMsgBuf,"Wrong number of MPEG data bytes specified in Xing header (%d instead of %d)",mpginfo->iBytes,mpginfo->iTotalMPEGBytes);
 				PrintMessage(out,"WARNING",filename,szMsgBuf,-1);
 				mpginfo->iErrors++;
