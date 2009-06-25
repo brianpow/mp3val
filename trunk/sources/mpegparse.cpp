@@ -1,6 +1,6 @@
 /*
  * MP3val - a program for MPEG audio file validation
- * Copyright (C) 2005-2007 Alexey Kuznetsov (ring0) and Eugen Tikhonov (jetsys)
+ * Copyright (C) 2005-2009 Alexey Kuznetsov (ring0) and Eugen Tikhonov (jetsys)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -158,9 +158,9 @@ int ValidateFile(unsigned char *baseptr,int iFileSize,MPEGINFO *mpginfo,ostream 
 				mpginfo->iDeletedFrames++;
 				mpginfo->iTotalMPEGBytes-=WriteToFile(hFile,NULL,0,-1,-1);
 			}
-			else {
+/*			else {
 				if(WriteToFile(hFile,NULL,0,-1,-1)==-1) return -1;
-			}
+			}*/
 		}
 		else if(LastFrameWasMPEG) {
 			mpginfo->iDeletedFrames++;

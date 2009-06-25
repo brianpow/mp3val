@@ -1,3 +1,7 @@
+[0.1.8]
+
+The garbage handling behavior slightly changed. Some issues with ID3v2 tags being removed should be gone now.
+
 [0.1.7]
 
 This is mainly a bugfix release. Some issues from Sourceforge bug tracker and from Debian bug tracker have been addressed.
