@@ -67,7 +67,7 @@ int ScanDirForFiles(CFileList *pl,char *szDirName) {
 			if(wfd.dwFileAttributes&FILE_ATTRIBUTE_DIRECTORY) {
 				if(lstrcmp(wfd.cFileName,".")&&lstrcmp(wfd.cFileName,"..")) ScanDirForFiles(pl,wfd.cFileName);
 			}
-			if(!lstrcmp(".mp3",&wfd.cFileName[lstrlen(wfd.cFileName)-4])) {
+			if(!lstrcmpi(".mp3",&wfd.cFileName[lstrlen(wfd.cFileName)-4])) {
 				GetFullPathName(wfd.cFileName,MAX_PATH+1,pathbuf,&filepart);
 				pl->addfile(pathbuf);
 			}
