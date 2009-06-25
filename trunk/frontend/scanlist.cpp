@@ -133,7 +133,8 @@ int ScanFile(int i,CFileList *plist,CSpawner *pSpawner,bool fix) {
 		}
 		else if(!memcmp(strbuf,"ERROR",lstrlen("ERROR"))) newstate=ST_PROBLEM;
 		else if(!memcmp(strbuf,"FIXED",lstrlen("FIXED"))) newstate=ST_FIXED;
-	} while(lstrcmp(strbuf,"Done!"));
+		else if(!memcmp(strbuf,"Cannot open",lstrlen("Cannot open"))) newstate=ST_PROBLEM;
+	} while(lstrcmp(strbuf,"Done!")&&memcmp(strbuf,"Cannot open",lstrlen("Cannot open")));
 	
 	return newstate;
 }
