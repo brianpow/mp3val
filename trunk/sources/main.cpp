@@ -26,6 +26,7 @@ using namespace std;
 #include "crossapi.h"
 #include "mpegparse.h"
 #include "report.h"
+#include "out.h"
 
 char pcBuffer[CROSSAPI_MAX_PATH+1];
 char pcBuffer2[CROSSAPI_MAX_PATH+1];
@@ -51,6 +52,7 @@ int main(int argc, char *argv[]) {
 	char *szFile,*szPath;
 	
 	char *szLogFile=NULL;
+	int iLogFile=0;
 	char szFullLogFile[CROSSAPI_MAX_PATH+2];
 	char szStartDir[CROSSAPI_MAX_PATH+2];
 	
@@ -66,11 +68,11 @@ int main(int argc, char *argv[]) {
 
 	if(help) {
 		cerr<<"MP3val - a program for MPEG audio stream validation.\n";
-		cerr<<"Version 0.1.9.\n\n";
+		cerr<<"Version 0.1.10.\n\n";
 		cerr<<"Usage: "<<argv[0]<<" <files to validate> [options]\n\n";
 		cerr<<"Options:\n\n";
 		cerr<<"\t-f                try to fix errors\n";
-		cerr<<"\t-l<file name>     write log to the specified file (default: stdout)\n";
+		cerr<<"\t-l<filename>      log to <filename> (filename will be automatically generated if not provied, except pipe mode)\n";
 		cerr<<"\t-si               suppress INFO messages\n";
 		cerr<<"\t-nb               delete .bak files (suitable with -f)\n";
 		cerr<<"\t-t                keep file timestamps (suitable with -f)\n";
@@ -82,11 +84,16 @@ int main(int argc, char *argv[]) {
 		cerr<<"This program is released under GPL, see the attached file for details.\n";
 		return 0;
 	}
-	
+
 	for(i=1;i<argc;i++) {
 		if(argv[i][0]!='-') continue;
-		if((strlen(argv[i])>=2)&&(!memcmp(argv[i],"-l",2))) {
-			szLogFile=&argv[i][2];
+		if(strlen(argv[i])>=2 && !memcmp(argv[i],"-l",2)) {
+			iLogFile=2;
+			if(strlen(argv[i])>2)
+			{
+				iLogFile=1;
+				szLogFile=&argv[i][2];
+			}
 		}
 		else if(!strcmp(argv[i],"-f")) {
 			FixErrors=true;
@@ -104,7 +111,7 @@ int main(int argc, char *argv[]) {
 			bPipeMode=true;
 		}
 		else if(!strcmp(argv[i],"-v")) {
-			cout<<"MP3val 0.1.9\n";
+			cout<<"MP3val 0.1.10\n";
 			return 0;
 		}
 		else {
@@ -114,9 +121,9 @@ int main(int argc, char *argv[]) {
 	}
 	
 	if(bDeleteBaks&&!FixErrors) cerr<<"Note: using -nb doesn't make sense as long as -f isn't used\n";
-	
-	if(szLogFile) CrossAPI_GetFullPathName(szLogFile,szFullLogFile,CROSSAPI_MAX_PATH+2);
-	
+
+	if(iLogFile==1)	CrossAPI_GetFullPathName(szLogFile,szFullLogFile,CROSSAPI_MAX_PATH+2);
+
 	if(bPipeMode) {
 		i=0;
 		for(;;) {
@@ -126,7 +133,9 @@ int main(int argc, char *argv[]) {
 			if(!ch) break;
 			if(ch==0x0D||ch==0x0A) {
 				szPipedFileName[i]='\0';
-				if(*szPipedFileName) ProcessFile(szPipedFileName,szLogFile?szFullLogFile:NULL);
+				if(*szPipedFileName) {
+					ProcessFile(szPipedFileName,iLogFile?szFullLogFile:NULL);
+				}
 				i=0;
 			}
 			else {
@@ -154,7 +163,15 @@ int main(int argc, char *argv[]) {
 			
 			do {
 				if(cfd.bIsDirectory) continue;
-				ProcessFile(cfd.cFileName,szLogFile?szFullLogFile:NULL);
+				if(iLogFile==2) {
+					char *tmp=NULL;
+					tmp=getFilename(cfd.cFileName);
+					szLogFile=(char *)malloc(strlen(tmp)+4+1);
+					strncat(szLogFile,tmp,strlen(tmp));
+					strncat(szLogFile,".log",4);
+					CrossAPI_GetFullPathName(szLogFile,szFullLogFile,CROSSAPI_MAX_PATH+2);
+				}
+				ProcessFile(cfd.cFileName,iLogFile?szFullLogFile:NULL);
 			}while(CrossAPI_FindNextFile(hFind,&cfd));
 		
 			CrossAPI_FindClose(hFind);

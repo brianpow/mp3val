@@ -22,6 +22,8 @@
 
 int GetLastFrameSize();
 
+char *getFilename(char *filename, bool greedy=true);
+
 int WriteToFile(int hFile,char *baseptr,int index,int bytes,int iFileSize);
 
 #endif

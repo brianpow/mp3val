@@ -17,6 +17,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#include <cstring>
+#include <cstdlib>
 #include "out.h"
 #include "crossapi.h"
 
@@ -24,6 +26,26 @@ static int iPrevSize=0;
 
 int GetLastFrameSize() {
 	return iPrevSize;
+}
+
+char *getFilename(char *filename, bool greedy){
+	int count;
+	char *chr;
+	char *newFilename;
+	if (greedy)
+		chr=strrchr(filename,'.');
+	else
+		chr=strchr(filename,'.');
+
+	if(chr)
+		count = chr - filename;
+	else
+		count=strlen(filename);
+
+	newFilename = (char *)malloc(sizeof(char) * (count + 1));
+	strncpy(newFilename,filename,count);
+	newFilename[count]='\0';
+	return newFilename;
 }
 
 int WriteToFile(int hFile,char *baseptr,int index,int bytes,int iFileSize) {
