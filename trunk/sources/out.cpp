@@ -18,6 +18,7 @@
  */
 
 #include <cstring>
+#include <stdio.h>
 #include <cstdlib>
 #include "out.h"
 #include "crossapi.h"
@@ -46,6 +47,17 @@ char *getFilename(char *filename, bool greedy){
 	strncpy(newFilename,filename,count);
 	newFilename[count]='\0';
 	return newFilename;
+}
+
+unsigned int writeFile(char *prefix, const char *ext, unsigned char *data, unsigned int index, unsigned int size){
+	FILE *fp;
+	char newFilename[255];
+	unsigned int bytesWritten=0;
+	snprintf(newFilename,255,"%s 0x%x-0x%x (%d).%s",prefix, index, index+size, size, ext);
+	fp=fopen(newFilename,"wb");
+	bytesWritten=fwrite(&data[index],sizeof(char),size,fp);
+	fclose(fp);
+	return bytesWritten;
 }
 
 int WriteToFile(int hFile,char *baseptr,int index,int bytes,int iFileSize) {

@@ -36,12 +36,13 @@ bool bSuppressInfo=false;
 bool bPipeMode=false;
 bool bDeleteBaks=false;
 bool bKeepTimestamps=false;
+bool bSplitFile=false;
 
 extern int iMappingLength;
 
 int SplitFileName(char *szFileNameIn,char **szPathOut,char **szFileNameOut);
 
-int ProcessFile(char *szFileName,char *szLogFileName);
+int ProcessFile(char *szFileName,char *szLogFileName,bool bSplitFile);
 
 int main(int argc, char *argv[]) {
 	int hFind;
@@ -68,7 +69,7 @@ int main(int argc, char *argv[]) {
 
 	if(help) {
 		cerr<<"MP3val - a program for MPEG audio stream validation.\n";
-		cerr<<"Version 0.1.10.\n\n";
+		cerr<<"Version 0.1.11.\n\n";
 		cerr<<"Usage: "<<argv[0]<<" <files to validate> [options]\n\n";
 		cerr<<"Options:\n\n";
 		cerr<<"\t-f                try to fix errors\n";
@@ -77,6 +78,7 @@ int main(int argc, char *argv[]) {
 		cerr<<"\t-nb               delete .bak files (suitable with -f)\n";
 		cerr<<"\t-t                keep file timestamps (suitable with -f)\n";
 		cerr<<"\t-p                pipe mode (receive input file names from stdin)\n";
+		cerr<<"\t-s                split valid consecutive fragments into files\n";
 		cerr<<"\t-v                print version number and exit\n";
 		cerr<<"\n";
 		cerr<<"Wildcards are allowed.\n\n";
@@ -110,8 +112,11 @@ int main(int argc, char *argv[]) {
 		else if(!strcmp(argv[i],"-p")) {
 			bPipeMode=true;
 		}
+		else if(!strcmp(argv[i],"-s")){
+			bSplitFile=true;
+		}
 		else if(!strcmp(argv[i],"-v")) {
-			cout<<"MP3val 0.1.10\n";
+			cout<<"MP3val 0.1.11\n";
 			return 0;
 		}
 		else {
@@ -134,7 +139,7 @@ int main(int argc, char *argv[]) {
 			if(ch==0x0D||ch==0x0A) {
 				szPipedFileName[i]='\0';
 				if(*szPipedFileName) {
-					ProcessFile(szPipedFileName,iLogFile?szFullLogFile:NULL);
+					ProcessFile(szPipedFileName,iLogFile?szFullLogFile:NULL,bSplitFile);
 				}
 				i=0;
 			}
@@ -171,7 +176,7 @@ int main(int argc, char *argv[]) {
 					strncat(szLogFile,".log",4);
 					CrossAPI_GetFullPathName(szLogFile,szFullLogFile,CROSSAPI_MAX_PATH+2);
 				}
-				ProcessFile(cfd.cFileName,iLogFile?szFullLogFile:NULL);
+				ProcessFile(cfd.cFileName,iLogFile?szFullLogFile:NULL,bSplitFile);
 			}while(CrossAPI_FindNextFile(hFind,&cfd));
 		
 			CrossAPI_FindClose(hFind);
@@ -183,7 +188,7 @@ int main(int argc, char *argv[]) {
 	return 0;
 }
 
-int ProcessFile(char *szFileName,char *szLogFileName) {
+int ProcessFile(char *szFileName,char *szLogFileName,bool bSplitFile) {
 	MPEGINFO mpginfo;
 	unsigned char *pImage;
 	ofstream log_out;
@@ -214,9 +219,9 @@ int ProcessFile(char *szFileName,char *szLogFileName) {
 	}
 	
 	cout<<"Analyzing file \""<<szFileName<<"\"...\n";
-	
-	if(CrossAPI_GetFullPathName(szFileName,(char *)pcBuffer,CROSSAPI_MAX_PATH+1)) ValidateFile(pImage,iMappingLength,&mpginfo,out,pcBuffer,false,-1);
-	else ValidateFile(pImage,iMappingLength,&mpginfo,out,szFileName,false,-1);
+
+	if(CrossAPI_GetFullPathName(szFileName,(char *)pcBuffer,CROSSAPI_MAX_PATH+1)) ValidateFile(pImage,iMappingLength,&mpginfo,out,pcBuffer,false,-1,bSplitFile);
+	else ValidateFile(pImage,iMappingLength,&mpginfo,out,szFileName,false,-1,bSplitFile);
 
 	if(CrossAPI_GetFullPathName(szFileName,(char *)pcBuffer,CROSSAPI_MAX_PATH+1)) PrintReport(out,pcBuffer,&mpginfo);
 	else PrintReport(out,szFileName,&mpginfo);

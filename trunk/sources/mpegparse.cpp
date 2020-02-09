@@ -36,6 +36,7 @@ int mpeg2layers23_bitrates[]={-1,8,16,24,32,40,48,56,64,80,96,112,128,144,160,-1
 
 int ValidateMPEGFrame(unsigned char *baseptr,int index, MPEGINFO *mpginfo);
 int CheckMP3CRC(unsigned char *baseptr,int index,MPEGINFO *mpginfo,bool fix);
+int ValidateID3v1Tag(unsigned char *baseptr,int index, MPEGINFO *mpginfo);
 int ValidateID3v2Tag(unsigned char *baseptr,int index, MPEGINFO *mpginfo);
 int ValidateAPEv2Tag(unsigned char *baseptr,int index, MPEGINFO *mpginfo);
 
@@ -47,19 +48,35 @@ int ParseRIFFHeader(unsigned char *baseptr,int index,int iFileSize,int *iNewFile
 int MPEGResync(unsigned char *baseptr,int index,int iFileSize,int frames);
 
 DWORD rotate_dword(DWORD x);
+int ValidateEnhancedTag(unsigned char *baseptr,int index, MPEGINFO *mpginfo){
+	if(!memcmp(&baseptr[index],"TAG+",4)){
+		return 227;
+	}
+	return 0;
+}
+int ValidateID3v1Tag(unsigned char *baseptr,int index, MPEGINFO *mpginfo) {
+	if(!memcmp(&baseptr[index],"TAG",3) && memcmp(&baseptr[index],"TAG+",4))
+	{
+		mpginfo->id3v1++;
+		return 128;
+	}
+	return 0;
+}
 
-int ValidateFile(unsigned char *baseptr,int iFileSize,MPEGINFO *mpginfo,ostream *out,char *filename,bool fix,int hFile) {
+int ValidateFile(unsigned char *baseptr,int iFileSize,MPEGINFO *mpginfo,ostream *out,char *filename,bool fix,int hFile, bool bSplitFile) {
 	int iFrame;
 	int iFrameSize=0;
 	int iLastMPEGFrame=0,iNewFrame;
 	bool WasFirstFrame=false;
 	int iXingOffset=0;
 	int iID3v1Offset=0;
+	int iLastConsecutiveFrameBegin=0;
 	int iFirstMPEGFrameOffset=0;
 	DWORD dwTemp;
 	int mpeg_total;
 	bool LastFrameWasMPEG=false;
-
+	char *prefix;
+	prefix=getFilename(filename);
 	iFrame=0;
 
 	mpginfo->clear();
@@ -174,22 +191,47 @@ int ValidateFile(unsigned char *baseptr,int iFileSize,MPEGINFO *mpginfo,ostream 
 				break;
 			}
 			mpginfo->garbage_at_the_begin=0;
-			if(!fix) PrintMessage(out,"WARNING",filename,"Garbage at the beginning of the file",mpginfo->garbage_at_the_begin);
+			if(!fix)
+				PrintMessage(out,"WARNING",filename,"Garbage at the beginning of the file",mpginfo->garbage_at_the_begin, iNewFrame);
 			mpginfo->iErrors++;
 			iFrame=iNewFrame;
+			iLastConsecutiveFrameBegin=iNewFrame;
 		}
 		else {
 			iNewFrame=MPEGResync(baseptr,iLastMPEGFrame?(iLastMPEGFrame+1):iFrame,iFileSize,6);
 			if(iNewFrame==-1) {
 				mpginfo->garbage_at_the_end=iFrame;
-				if(!fix) PrintMessage(out,"WARNING",filename,"Garbage at the end of the file",mpginfo->garbage_at_the_end);
-				mpginfo->iErrors++;
+				if(!fix) PrintMessage(out,"WARNING",filename,"Garbage at the end of the file",mpginfo->garbage_at_the_end, -1, iFileSize);
+				if(int tmp = ValidateID3v1Tag(baseptr,iFrame,mpginfo)){
+					PrintMessage(out,"WARNING",filename,"ID3 v1 tag found, it should be at the end of file!\n",iFrame,tmp);
+					iFrame+=tmp;
+				}
+				else if(int tmp = ValidateID3v2Tag(baseptr,iFrame,mpginfo)){
+					PrintMessage(out,"WARNING",filename,"ID3 v2 tag found, it should be at the beginning or the end of file!\n",iFrame,tmp);
+					iFrame+=tmp;
+				}
+				PrintMessage(out,"INFO",filename,"Last good consecutive range", iLastConsecutiveFrameBegin, -1, iFrame);
+				if(bSplitFile) writeFile(prefix, "mp3", baseptr, iLastConsecutiveFrameBegin, iFrame-iLastConsecutiveFrameBegin);
 				break;
 			}
 			mpginfo->mpeg_stream_error=iFrame;
-			if(!fix) PrintMessage(out,"WARNING",filename,"MPEG stream error, resynchronized successfully",mpginfo->mpeg_stream_error);
+			if(!fix) {
+				PrintMessage(out,"WARNING",filename,"MPEG stream error, resynchronized successfully",mpginfo->mpeg_stream_error, -1, iNewFrame);
+				if(int tmp = ValidateID3v1Tag(baseptr,iFrame,mpginfo)){
+					PrintMessage(out,"WARNING",filename,"ID3 v1 tag found, it should be at the end of file!\n",iFrame,tmp);
+					iFrame+=tmp;
+				}
+				else if(int tmp = ValidateID3v2Tag(baseptr,iFrame,mpginfo)){
+					PrintMessage(out,"WARNING",filename,"ID3 v2 tag found, it should be at the beginning or the end of file!\n",iFrame,tmp);
+					iFrame+=tmp;
+				}
+				PrintMessage(out,"INFO",filename,"Last good consecutive range", iLastConsecutiveFrameBegin, -1, iFrame);
+				if(bSplitFile) writeFile(prefix, "mp3", baseptr, iLastConsecutiveFrameBegin, iFrame-iLastConsecutiveFrameBegin);
+
+			}
 			mpginfo->iErrors++;
 			iFrame=iNewFrame;
+			iLastConsecutiveFrameBegin=iNewFrame;
 		}
 
 	}

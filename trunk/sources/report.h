@@ -27,6 +27,6 @@ using namespace std;
 #include "mpegparse.h"
 
 int PrintReport(ostream *out,char *filename,MPEGINFO *mpginfo);
-int PrintMessage(ostream *out,char *caption,char *filename,char *message,int iErrorFrame);
+int PrintMessage(ostream *out,const char *caption,char *filename,char *message,int iErrorFrame, int size = -1, int endOffset = -1);
 
 #endif

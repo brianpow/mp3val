@@ -228,10 +228,19 @@ int PrintReport(ostream *out,char *filename,MPEGINFO *mpginfo) {
 
 }
 
-int PrintMessage(ostream *out,char *caption,char *filename,char *message,int iErrorFrame) {
+int PrintMessage(ostream *out,const char *caption,char *filename,char *message,int iErrorFrame,int iSize,int endOffset) {
 	(*out)<<caption<<": ";
 	if(iErrorFrame>=0) {
-		(*out)<<"\""<<filename<<"\" (offset 0x"<<hex<<iErrorFrame<<dec<<"): ";
+		if(iSize > -1){
+			endOffset = iErrorFrame + iSize;
+			(*out)<<"\""<<filename<<"\" "<<iErrorFrame<<"-"<<endOffset<<" (0x"<<hex<<iErrorFrame<<"-"<<endOffset<<dec<<", (size: "<<dec<<iSize<<"): ";
+		}
+		else if(endOffset > -1){
+			iSize = endOffset - iErrorFrame;
+			(*out)<<"\""<<filename<<"\" "<<iErrorFrame<<"-"<<endOffset<<" (0x"<<hex<<iErrorFrame<<"-"<<endOffset<<dec<<", (size: "<<dec<<iSize<<"): ";
+		}
+		else
+		(*out)<<"\""<<filename<<"\" (0x"<<hex<<iErrorFrame<<dec<<"): ";
 	}
 	else {
 		(*out)<<"\""<<filename<<"\": ";

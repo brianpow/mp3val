@@ -117,13 +117,13 @@ struct MPEGINFO {
 		iLastMPEGLayer=0;
 		iLastMPEGVersion=0;
 		iCRCErrors=0;
-		
+
 		iTotalMPEGBytes=0;
 		iErrors=0;
 		iDeletedFrames=0;
 	}
 };
 
-int ValidateFile(unsigned char *baseptr,int iFileSize, MPEGINFO *mpginfo,std::ostream *out,char *filename,bool fix,int hFile);
+int ValidateFile(unsigned char *baseptr,int iFileSize, MPEGINFO *mpginfo,std::ostream *out,char *filename,bool fix,int hFilem,bool bSplitFile=false);
 
 #endif
