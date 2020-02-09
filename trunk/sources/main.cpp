@@ -66,7 +66,7 @@ int main(int argc, char *argv[]) {
 
 	if(help) {
 		cerr<<"MP3val - a program for MPEG audio stream validation.\n";
-		cerr<<"Version 0.1.8.\n\n";
+		cerr<<"Version 0.1.9.\n\n";
 		cerr<<"Usage: "<<argv[0]<<" <files to validate> [options]\n\n";
 		cerr<<"Options:\n\n";
 		cerr<<"\t-f                try to fix errors\n";
@@ -104,7 +104,7 @@ int main(int argc, char *argv[]) {
 			bPipeMode=true;
 		}
 		else if(!strcmp(argv[i],"-v")) {
-			cout<<"MP3val 0.1.8\n";
+			cout<<"MP3val 0.1.9\n";
 			return 0;
 		}
 		else {
@@ -186,7 +186,7 @@ int ProcessFile(char *szFileName,char *szLogFileName) {
 	if(szLogFileName) {
 		log_out.open(szLogFileName,ios::out|ios::app|ios::binary);
 		if(!log_out) {
-			cerr<<"Cannot open log file\n";
+			cerr<<"Cannot open log file \""<<szLogFileName<<"\"\n";
 			CrossAPI_UnmapFile(pImage);
 			return 0;
 		}
