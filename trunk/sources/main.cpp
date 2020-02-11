@@ -28,6 +28,9 @@ using namespace std;
 #include "report.h"
 #include "out.h"
 
+#define PROGRAM "MP3val"
+#define VERSION "0.1.11"
+
 char pcBuffer[CROSSAPI_MAX_PATH+1];
 char pcBuffer2[CROSSAPI_MAX_PATH+1];
 
@@ -68,8 +71,8 @@ int main(int argc, char *argv[]) {
 	}
 
 	if(help) {
-		cerr<<"MP3val - a program for MPEG audio stream validation.\n";
-		cerr<<"Version 0.1.11.\n\n";
+		cerr<<PROGRAM<<" - a program for MPEG audio stream validation.\n";
+		cerr<<"Version "<<VERSION<<"\n\n";
 		cerr<<"Usage: "<<argv[0]<<" <files to validate> [options]\n\n";
 		cerr<<"Options:\n\n";
 		cerr<<"\t-f                try to fix errors\n";
@@ -116,7 +119,7 @@ int main(int argc, char *argv[]) {
 			bSplitFile=true;
 		}
 		else if(!strcmp(argv[i],"-v")) {
-			cout<<"MP3val 0.1.11\n";
+			cout<<PROGRAM<<" "<<VERSION<<"\n";
 			return 0;
 		}
 		else {
