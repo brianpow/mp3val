@@ -1,4 +1,5 @@
-CXXFLAGS=-Wall -O2
+CXXFLAGS+=-Wall -O2
+CXX=$(CROSS_COMPILE)g++
 
 mp3val: main.o mpegparse.o out.o report.o crossapi.o crc.o
 	$(CXX) $(CXXFLAGS) $^ -o $@
