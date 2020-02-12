@@ -41,6 +41,7 @@ struct MPEGINFO {
 	int mpeg25layer3;
 //Tag counts
 	int id3v1;
+	int enhancedTag;
 	int id3v2;
 	int apev2;
 
@@ -91,6 +92,7 @@ struct MPEGINFO {
 		mpeg25layer2=0;
 		mpeg25layer3=0;
 		id3v1=0;
+		enhancedTag=0;
 		id3v2=0;
 		apev2=0;
 		

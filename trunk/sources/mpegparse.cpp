@@ -36,9 +36,9 @@ int mpeg2layers23_bitrates[]={-1,8,16,24,32,40,48,56,64,80,96,112,128,144,160,-1
 
 int ValidateMPEGFrame(unsigned char *baseptr,int index, MPEGINFO *mpginfo);
 int CheckMP3CRC(unsigned char *baseptr,int index,MPEGINFO *mpginfo,bool fix);
-int ValidateID3v1Tag(unsigned char *baseptr,int index, MPEGINFO *mpginfo);
-int ValidateID3v2Tag(unsigned char *baseptr,int index, MPEGINFO *mpginfo);
-int ValidateAPEv2Tag(unsigned char *baseptr,int index, MPEGINFO *mpginfo);
+int ValidateID3v1Tag(unsigned char *baseptr,int index,int size, MPEGINFO *mpginfo);
+int ValidateID3v2Tag(unsigned char *baseptr,int index,int size, MPEGINFO *mpginfo);
+int ValidateAPEv2Tag(unsigned char *baseptr,int index,int size, MPEGINFO *mpginfo);
 
 int ParseXingHeader(unsigned char *baseptr,int index,MPEGINFO *mpginfo);
 int ParseVBRIHeader(unsigned char *baseptr,int index,MPEGINFO *mpginfo);
@@ -48,19 +48,72 @@ int ParseRIFFHeader(unsigned char *baseptr,int index,int iFileSize,int *iNewFile
 int MPEGResync(unsigned char *baseptr,int index,int iFileSize,int frames);
 
 DWORD rotate_dword(DWORD x);
-int ValidateEnhancedTag(unsigned char *baseptr,int index, MPEGINFO *mpginfo){
-	if(!memcmp(&baseptr[index],"TAG+",4)){
+
+int ValidateEnhancedTag(unsigned char *baseptr,int index,int size, MPEGINFO *mpginfo){
+	if(size>=4 && !memcmp(&baseptr[index],"TAG+",4)){
+		if(size >= 227){
+		mpginfo->enhancedTag++;
 		return 227;
+		}
+		else
+		{
+			//TODO: Handle truncated tag
+		}
+
 	}
 	return 0;
 }
-int ValidateID3v1Tag(unsigned char *baseptr,int index, MPEGINFO *mpginfo) {
-	if(!memcmp(&baseptr[index],"TAG",3) && memcmp(&baseptr[index],"TAG+",4))
+
+int ValidateID3v1Tag(unsigned char *baseptr,int index,int size, MPEGINFO *mpginfo) {
+	if(size>=3&&!memcmp(&baseptr[index],"TAG",3) && memcmp(&baseptr[index],"TAG+",4))
 	{
+		if(size >= 128)
+		{
 		mpginfo->id3v1++;
 		return 128;
+		}
+		else
+		{
+			//TODO: Handle truncated tag
+		}
+
 	}
 	return 0;
+}
+
+int CheckTags(unsigned char *baseptr,int pos,int end,ostream *out,char *filename,MPEGINFO *mpginfo){
+	int totalBytes=0, tmp, index;
+	bool tagFound;
+	do{
+		tagFound=false;
+		index=pos+totalBytes;
+		if((tmp=ValidateEnhancedTag(baseptr,index,end-index,mpginfo))){
+			if(!ValidateID3v1Tag(baseptr,index+tmp,end-index,mpginfo))
+				PrintMessage(out,"WARNING",filename,"Enhanced Tag found but no ID3 v1 Tag followed!\n",index,tmp);
+			totalBytes+=tmp;
+			tagFound=true;
+			index=pos+totalBytes;
+		}
+		if((tmp=ValidateID3v1Tag(baseptr,index,end-index,mpginfo))){
+			PrintMessage(out,"WARNING",filename,"ID3 v1 tag found, it should be at the end of file!\n",index,tmp);
+			totalBytes+=tmp;
+			tagFound=true;
+			index=pos+totalBytes;
+		}
+		if((tmp=ValidateID3v2Tag(baseptr,index,end-index,mpginfo))){
+			PrintMessage(out,"WARNING",filename,"ID3 v2 tag found, it should be at the beginning or the end of file!\n",index,tmp);
+			totalBytes+=tmp;
+			tagFound=true;
+			index=pos+totalBytes;
+		}
+		if((tmp=ValidateAPEv2Tag(baseptr,index,end-index,mpginfo))){
+			PrintMessage(out,"INFO",filename,"APE v2 tag found.\n",index,tmp);
+			totalBytes+=tmp;
+			tagFound=true;
+			index=pos+totalBytes;
+		}
+	}while(tagFound==true);
+	return totalBytes;
 }
 
 int ValidateFile(unsigned char *baseptr,int iFileSize,MPEGINFO *mpginfo,ostream *out,char *filename,bool fix,int hFile, bool bSplitFile) {
@@ -70,6 +123,7 @@ int ValidateFile(unsigned char *baseptr,int iFileSize,MPEGINFO *mpginfo,ostream 
 	bool WasFirstFrame=false;
 	int iXingOffset=0;
 	int iID3v1Offset=0;
+	int iEnhancedTagOffset=0;
 	int iLastConsecutiveFrameBegin=0;
 	int iFirstMPEGFrameOffset=0;
 	DWORD dwTemp;
@@ -81,18 +135,21 @@ int ValidateFile(unsigned char *baseptr,int iFileSize,MPEGINFO *mpginfo,ostream 
 
 	mpginfo->clear();
 
-	if(iFileSize>=128&&!memcmp(&baseptr[iFileSize-128],"TAG",3)) {
-		mpginfo->id3v1=1;
-		iFileSize-=128;
+	if(int tmp=ValidateID3v1Tag(baseptr,iFileSize-128,128,mpginfo)) {
+		iFileSize-=tmp;
 		iID3v1Offset=iFileSize;
+		if(int tmp=ValidateEnhancedTag(baseptr,iFileSize-227,227,mpginfo)){
+			iFileSize-=tmp;
+			iEnhancedTagOffset=iFileSize;
+		}
 	}
-	
+
 	if((iFileSize>=4)&&!memcmp(&baseptr[iFrame],"ID3",3)) {
 		if(iFrame+10>iFileSize) {
 			mpginfo->truncated=iFrame;
 		}
 		else {
-			iFrame+=ValidateID3v2Tag(baseptr,iFrame,mpginfo);
+			iFrame+=ValidateID3v2Tag(baseptr,iFrame,iFileSize-iFrame,mpginfo);
 			if(fix) {
 				if(WriteToFile(hFile,(char *)baseptr,0,iFrame,iFileSize)==-1) return -1;
 				LastFrameWasMPEG=false;
@@ -161,7 +218,7 @@ int ValidateFile(unsigned char *baseptr,int iFileSize,MPEGINFO *mpginfo,ostream 
 				mpginfo->truncated=iFrame;
 				break;
 			}
-			iFrameSize=ValidateAPEv2Tag(baseptr,iFrame,mpginfo);
+			iFrameSize=ValidateAPEv2Tag(baseptr,iFrame,iFileSize-iFrame,mpginfo);
 			if(fix) {
 				if(WriteToFile(hFile,(char *)baseptr,iFrame,iFrameSize,iFileSize)==-1) return -1;
 				LastFrameWasMPEG=false;
@@ -202,14 +259,7 @@ int ValidateFile(unsigned char *baseptr,int iFileSize,MPEGINFO *mpginfo,ostream 
 			if(iNewFrame==-1) {
 				mpginfo->garbage_at_the_end=iFrame;
 				if(!fix) PrintMessage(out,"WARNING",filename,"Garbage at the end of the file",mpginfo->garbage_at_the_end, -1, iFileSize);
-				if(int tmp = ValidateID3v1Tag(baseptr,iFrame,mpginfo)){
-					PrintMessage(out,"WARNING",filename,"ID3 v1 tag found, it should be at the end of file!\n",iFrame,tmp);
-					iFrame+=tmp;
-				}
-				else if(int tmp = ValidateID3v2Tag(baseptr,iFrame,mpginfo)){
-					PrintMessage(out,"WARNING",filename,"ID3 v2 tag found, it should be at the beginning or the end of file!\n",iFrame,tmp);
-					iFrame+=tmp;
-				}
+				iFrame+=CheckTags(baseptr,iFrame,iFileSize,out,filename,mpginfo);
 				PrintMessage(out,"INFO",filename,"Last good consecutive range", iLastConsecutiveFrameBegin, -1, iFrame);
 				if(bSplitFile) writeFile(prefix, "mp3", baseptr, iLastConsecutiveFrameBegin, iFrame-iLastConsecutiveFrameBegin);
 				break;
@@ -217,14 +267,7 @@ int ValidateFile(unsigned char *baseptr,int iFileSize,MPEGINFO *mpginfo,ostream 
 			mpginfo->mpeg_stream_error=iFrame;
 			if(!fix) {
 				PrintMessage(out,"WARNING",filename,"MPEG stream error, resynchronized successfully",mpginfo->mpeg_stream_error, -1, iNewFrame);
-				if(int tmp = ValidateID3v1Tag(baseptr,iFrame,mpginfo)){
-					PrintMessage(out,"WARNING",filename,"ID3 v1 tag found, it should be at the end of file!\n",iFrame,tmp);
-					iFrame+=tmp;
-				}
-				else if(int tmp = ValidateID3v2Tag(baseptr,iFrame,mpginfo)){
-					PrintMessage(out,"WARNING",filename,"ID3 v2 tag found, it should be at the beginning or the end of file!\n",iFrame,tmp);
-					iFrame+=tmp;
-				}
+				iFrame+=CheckTags(baseptr,iFrame,iFileSize,out,filename,mpginfo);
 				PrintMessage(out,"INFO",filename,"Last good consecutive range", iLastConsecutiveFrameBegin, -1, iFrame);
 				if(bSplitFile) writeFile(prefix, "mp3", baseptr, iLastConsecutiveFrameBegin, iFrame-iLastConsecutiveFrameBegin);
 
@@ -246,7 +289,7 @@ int ValidateFile(unsigned char *baseptr,int iFileSize,MPEGINFO *mpginfo,ostream 
 		mpginfo->mpeg25layer1+
 		mpginfo->mpeg25layer2+
 		mpginfo->mpeg25layer3;
-	
+
 	if(mpginfo->truncated>=0) {
 		if(fix) {
 			if(WriteToFile(hFile,NULL,0,-1,-1)==-1) return -1;
@@ -262,6 +305,8 @@ int ValidateFile(unsigned char *baseptr,int iFileSize,MPEGINFO *mpginfo,ostream 
 	}
 
 	if(fix&&mpginfo->id3v1) {
+		if(mpginfo->enhancedTag)
+			if(WriteToFile(hFile,(char *)baseptr,iEnhancedTagOffset,227,-1)==-1) return -1;
 		if(WriteToFile(hFile,(char *)baseptr,iID3v1Offset,128,-1)==-1) return -1;
 	}
 
@@ -307,7 +352,7 @@ int ValidateMPEGFrame(unsigned char *baseptr,int index, MPEGINFO *mpginfo) {
 
 	int bitrate_index=0;
 	int iFrameSize;
-	
+
 //Check if the frame contains CRC
 	if(baseptr[index+1]&0x01) {
 		mpginfo->bLastFrameCRC=false;
@@ -389,12 +434,12 @@ int ValidateMPEGFrame(unsigned char *baseptr,int index, MPEGINFO *mpginfo) {
 			mpeg_bitrate=mpeg2layers23_bitrates[bitrate_index];
 		}
 	}
-	
+
 	if(mpeg_bitrate==-1) {
 		mpginfo->mpeg_stream_error=index;
 		return -1;
 	}
-	
+
 	if(mpginfo->iLastBitrate>0&&mpginfo->iLastBitrate!=mpeg_bitrate) mpginfo->bVariableBitrate=true;
 	mpginfo->iLastBitrate=mpeg_bitrate;
 
@@ -427,7 +472,7 @@ int ValidateMPEGFrame(unsigned char *baseptr,int index, MPEGINFO *mpginfo) {
 //Check if frame is stereo
 	if((baseptr[index+3]&0xC0)==0xC0) mpginfo->LastFrameStereo=false;
 	else mpginfo->LastFrameStereo=true;
-	
+
 	mpginfo->iLastMPEGVersion=mpeg_version;
 	mpginfo->iLastMPEGLayer=mpeg_layer;
 
@@ -435,9 +480,9 @@ int ValidateMPEGFrame(unsigned char *baseptr,int index, MPEGINFO *mpginfo) {
 	else if(mpeg_layer==2) iFrameSize=144*mpeg_bitrate*1000/mpeg_sampling_rate+mpeg_padding;
 	else if(mpeg_layer==3&&mpeg_version==1)	iFrameSize=144*mpeg_bitrate*1000/mpeg_sampling_rate+mpeg_padding;
 	else iFrameSize=72*mpeg_bitrate*1000/mpeg_sampling_rate+mpeg_padding;
-	
+
 	mpginfo->iTotalMPEGBytes+=iFrameSize;
-	
+
 	return iFrameSize;
 }
 
@@ -446,7 +491,7 @@ int CheckMP3CRC(unsigned char *baseptr,int index,MPEGINFO *mpginfo,bool fix) {
 	int storedcrc=0;
 	int iSideInfoSize;
 	crc=CalculateCRC16(crc,0x8005,(char *)&baseptr[index+2],2);
-	
+
 	if(mpginfo->LastFrameStereo) {
 		if(mpginfo->iLastMPEGVersion==1) {
 			iSideInfoSize=32;
@@ -463,12 +508,12 @@ int CheckMP3CRC(unsigned char *baseptr,int index,MPEGINFO *mpginfo,bool fix) {
 			iSideInfoSize=9;
 		}
 	}
-	
+
 	crc=CalculateCRC16(crc,0x8005,(char *)&baseptr[index+6],iSideInfoSize);
-	
+
 	((char *)&storedcrc)[1]=baseptr[index+4];
 	((char *)&storedcrc)[0]=baseptr[index+5];
-	
+
 	if(storedcrc!=crc) {
 		mpginfo->bCRCError=true;
 		mpginfo->iCRCErrors++;
@@ -477,27 +522,51 @@ int CheckMP3CRC(unsigned char *baseptr,int index,MPEGINFO *mpginfo,bool fix) {
 			baseptr[index+5]=((char *)&crc)[0];
 		}
 	}
-	
+
 	return 0;
 }
 
-int ValidateID3v2Tag(unsigned char *baseptr,int index, MPEGINFO *mpginfo) {
-	int iDataSize;
+int ValidateID3v2Tag(unsigned char *baseptr,int index,int size, MPEGINFO *mpginfo) {
+	int iDataSize=0;
+	if(size>=3 && !memcmp(&baseptr[index],"ID3",3)) {
+		if(size<9)
+			return 0; //TODO: Handle Truncateed Tag
+		iDataSize=baseptr[index+9];
+		iDataSize+=128*baseptr[index+8];
+		iDataSize+=16384*baseptr[index+7];
+		iDataSize+=2097152*baseptr[index+6];
 
-	mpginfo->id3v2++;
+		iDataSize+=(baseptr[index+5]&0x10)?20:10;
+		if(size>=iDataSize){
+			mpginfo->id3v2++;
+			return iDataSize;
+		}
+		else
+		{
+			//TODO: Handle Truncateed Tag
+		}
 
-	iDataSize=baseptr[index+9];
-	iDataSize+=128*baseptr[index+8];
-	iDataSize+=16384*baseptr[index+7];
-	iDataSize+=2097152*baseptr[index+6];
-
-	if(baseptr[index+5]&0x10) return iDataSize+20;
-	return iDataSize+10;
+	}
+	return 0;
 }
 
-int ValidateAPEv2Tag(unsigned char *baseptr,int index, MPEGINFO *mpginfo) {
-	mpginfo->apev2++;
-	return *((int *)&baseptr[index+12])+32;
+int ValidateAPEv2Tag(unsigned char *baseptr,int index,int size,MPEGINFO *mpginfo) {
+	if(size>=4 && !memcmp(&baseptr[index],"APET",4)){
+		if(size < 12) // TODO: Handle truncated tag
+			return 0;
+		int tagSize= *((int *)&baseptr[index+12])+32;
+		if(tagSize >= size)
+		{
+			mpginfo->apev2++;
+			return tagSize;
+		}
+		else
+		{
+			// TODO: Handle truncated tag
+		}
+
+	}
+	return 0;
 }
 
 int MPEGResync(unsigned char *baseptr,int index,int iFileSize,int frames) {
@@ -507,7 +576,7 @@ int MPEGResync(unsigned char *baseptr,int index,int iFileSize,int frames) {
 	int iFrameSize;
 	MPEGINFO tmp_mpginfo;
 	int iMPEGVersion=0,iMPEGLayer=0;
-	
+
 	do {
 		if(iFileSize-(p-baseptr)-3<=0) return -1;
 		p=(unsigned char *)memchr(p,'\xFF',iFileSize-(p-baseptr)-3);
@@ -547,7 +616,7 @@ int MPEGResync(unsigned char *baseptr,int index,int iFileSize,int frames) {
 				p++;
 				break;
 			}
-			new_frame+=iFrameSize;	
+			new_frame+=iFrameSize;
 			sync_frames++;
 			if(iMPEGVersion&&iMPEGVersion!=tmp_mpginfo.iLastMPEGVersion) {
 				sync_frames=0;
@@ -565,7 +634,7 @@ int MPEGResync(unsigned char *baseptr,int index,int iFileSize,int frames) {
 			}
 		}
 	} while(sync_frames<frames);
-	
+
 	if(sync_frames>=frames) return (p-baseptr);
 	return -1;
 }
@@ -594,7 +663,7 @@ int ParseXingHeader(unsigned char *baseptr,int index,MPEGINFO *mpginfo) {
 		mpginfo->BytesPresent=true;
 		return 0;
 	}
-	
+
 	return 0;
 }
 
@@ -614,7 +683,7 @@ int ParseRIFFHeader(unsigned char *baseptr,int index,int iFileSize,int *iNewFile
 
 	if(index+11>iFileSize) return -1;
 	if(memcmp(&baseptr[index],"RIFF",4)) return -1;
-	
+
 	if(memcmp(&baseptr[index+8],"WAVE",4)) return -1;
 
 	index+=12;
@@ -626,7 +695,7 @@ int ParseRIFFHeader(unsigned char *baseptr,int index,int iFileSize,int *iNewFile
 			index+=iDataLength+8;
 			continue;
 		}
-		
+
 		*iNewFileSize=index+8+iDataLength;
 		if(*iNewFileSize>iFileSize) *iNewFileSize=iFileSize;
 		return index+8;
