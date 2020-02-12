@@ -49,14 +49,23 @@ char *getFilename(char *filename, bool greedy){
 	return newFilename;
 }
 
-unsigned int writeFile(char *prefix, const char *ext, unsigned char *data, unsigned int index, unsigned int size){
+unsigned int writeFile(char *prefix, const char *ext, unsigned char *data, unsigned int index, unsigned int size, unsigned int padding){
 	FILE *fp;
-	char newFilename[255];
+	char *newFilename, *buff;
+	size_t ssize;
 	unsigned int bytesWritten=0;
-	snprintf(newFilename,255,"%s 0x%x-0x%x (%d).%s",prefix, index, index+size, size, ext);
+
+	ssize=snprintf(NULL,0,"%%s 0x%%0%dx-0x%%0%ux (%%d).%%s",padding,padding);
+	buff=(char *)malloc(ssize +1);
+	snprintf(buff,ssize+1,"%%s 0x%%0%dx-0x%%0%ux (%%d).%%s",padding,padding);
+	ssize=snprintf(NULL,0,buff,prefix, index, index+size, size, ext);
+	newFilename=(char *)malloc(ssize+1);
+	snprintf(newFilename,ssize+1,buff,prefix, index, index+size, size, ext);
 	fp=fopen(newFilename,"wb");
 	bytesWritten=fwrite(&data[index],sizeof(char),size,fp);
 	fclose(fp);
+	free(newFilename);
+	free(buff);
 	return bytesWritten;
 }
 

@@ -24,7 +24,7 @@ int GetLastFrameSize();
 
 char *getFilename(char *filename, bool greedy=true);
 
-unsigned int writeFile(char *prefix, const char *ext, unsigned char *data, unsigned int index, unsigned int size);
+unsigned int writeFile(char *prefix, const char *ext, unsigned char *data, unsigned int index, unsigned int size, unsigned int padding=1);
 
 int WriteToFile(int hFile,char *baseptr,int index,int bytes,int iFileSize);
 
