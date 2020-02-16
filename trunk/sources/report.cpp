@@ -233,11 +233,11 @@ int PrintMessage(ostream *out,const char *caption,char *filename,char *message,i
 	if(iErrorFrame>=0) {
 		if(iSize > -1){
 			endOffset = iErrorFrame + iSize;
-			(*out)<<"\""<<filename<<"\" "<<iErrorFrame<<"-"<<endOffset<<" (0x"<<hex<<iErrorFrame<<"-"<<endOffset<<dec<<", (size: "<<dec<<iSize<<"): ";
+			(*out)<<"\""<<filename<<"\" "<<iErrorFrame<<"-"<<endOffset<<" (0x"<<hex<<iErrorFrame<<"-"<<endOffset<<dec<<"), (size: "<<dec<<iSize<<"): ";
 		}
 		else if(endOffset > -1){
 			iSize = endOffset - iErrorFrame;
-			(*out)<<"\""<<filename<<"\" "<<iErrorFrame<<"-"<<endOffset<<" (0x"<<hex<<iErrorFrame<<"-"<<endOffset<<dec<<", (size: "<<dec<<iSize<<"): ";
+			(*out)<<"\""<<filename<<"\" "<<iErrorFrame<<"-"<<endOffset<<" (0x"<<hex<<iErrorFrame<<"-"<<endOffset<<dec<<"), (size: "<<dec<<iSize<<"): ";
 		}
 		else
 		(*out)<<"\""<<filename<<"\" (0x"<<hex<<iErrorFrame<<dec<<"): ";
