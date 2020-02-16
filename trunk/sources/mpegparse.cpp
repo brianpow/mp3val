@@ -80,7 +80,33 @@ int ValidateID3v1Tag(unsigned char *baseptr,int index,int size, MPEGINFO *mpginf
 	}
 	return 0;
 }
-
+int CheckFrontTags(unsigned char *baseptr,int pos,int end,ostream *out,char *filename,MPEGINFO *mpginfo){
+	int totalBytes=0, tmp, index;
+	bool tagFound;
+	do{
+		tagFound=false;
+		index=pos+totalBytes;
+		if((tmp=ValidateID3v2Tag(baseptr,index,end-index,mpginfo))){
+			if(pos == 0)
+				PrintMessage(out,"INFO",filename,"ID3 v2 tag found at the beginning of file.\n",index,tmp);
+			else
+				PrintMessage(out,"WARNING",filename,"ID3 v2 tag found, it should be at the beginning or the end of file!\n",index,tmp);
+			totalBytes+=tmp;
+			tagFound=true;
+			index=pos+totalBytes;
+		}
+		if((tmp=ValidateAPEv2Tag(baseptr,index,end-index,mpginfo))){
+			if(pos == 0)
+				PrintMessage(out,"INFO",filename,"APE v2 tag found at the beginning of file.\n",index,tmp);
+			else
+				PrintMessage(out,"WARNING",filename,"APE v2 tag found, it should be at the beginning or the end of file!\n",index,tmp);
+			totalBytes+=tmp;
+			tagFound=true;
+			index=pos+totalBytes;
+		}
+	}while(tagFound==true);
+	return totalBytes;
+}
 int CheckTags(unsigned char *baseptr,int pos,int end,ostream *out,char *filename,MPEGINFO *mpginfo){
 	int totalBytes=0, tmp, index;
 	bool tagFound;
@@ -100,14 +126,7 @@ int CheckTags(unsigned char *baseptr,int pos,int end,ostream *out,char *filename
 			tagFound=true;
 			index=pos+totalBytes;
 		}
-		if((tmp=ValidateID3v2Tag(baseptr,index,end-index,mpginfo))){
-			PrintMessage(out,"WARNING",filename,"ID3 v2 tag found, it should be at the beginning or the end of file!\n",index,tmp);
-			totalBytes+=tmp;
-			tagFound=true;
-			index=pos+totalBytes;
-		}
-		if((tmp=ValidateAPEv2Tag(baseptr,index,end-index,mpginfo))){
-			PrintMessage(out,"INFO",filename,"APE v2 tag found.\n",index,tmp);
+		if((tmp=CheckFrontTags(baseptr,index,end,out,filename,mpginfo))){
 			totalBytes+=tmp;
 			tagFound=true;
 			index=pos+totalBytes;
@@ -250,11 +269,22 @@ int ValidateFile(unsigned char *baseptr,int iFileSize,MPEGINFO *mpginfo,ostream 
 				break;
 			}
 			mpginfo->garbage_at_the_begin=0;
+			iLastConsecutiveFrameBegin=iNewFrame;
+
+			//Look for ID3 v2  or APE v2 tag before first valid frame
+			int tagSize=0;
+			for(int i=0;i<iNewFrame;i++){
+				if((tagSize=CheckFrontTags(baseptr,i,iNewFrame,out,filename,mpginfo))){
+					if(i+tagSize==iNewFrame){
+						iLastConsecutiveFrameBegin=iNewFrame-tagSize;
+						break;
+					}
+				}
+			}
 			if(!fix)
-				PrintMessage(out,"WARNING",filename,"Garbage at the beginning of the file",mpginfo->garbage_at_the_begin, iNewFrame);
+				PrintMessage(out,"WARNING",filename,"Garbage at the beginning of the file",mpginfo->garbage_at_the_begin, iNewFrame-tagSize);
 			mpginfo->iErrors++;
 			iFrame=iNewFrame;
-			iLastConsecutiveFrameBegin=iNewFrame;
 		}
 		else {
 			iNewFrame=MPEGResync(baseptr,iLastMPEGFrame?(iLastMPEGFrame+1):iFrame,iFileSize,6);
