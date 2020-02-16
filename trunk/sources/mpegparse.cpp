@@ -236,7 +236,7 @@ int ValidateFile(unsigned char *baseptr,int iFileSize,MPEGINFO *mpginfo,ostream 
 						unsigned int size=iFrame-iLastConsecutiveFrameBegin;
 						size_t byteWritten=writeFile(prefix, "mp3", baseptr, iLastConsecutiveFrameBegin, size, padding);
 						if (byteWritten < size)
-							PrintMessage(out,"ERROR",filename,"Writing file failed！", iLastConsecutiveFrameBegin, byteWritten, -1);
+							PrintMessage(out,"ERROR",filename,"Writing file failed! File exists or disk full.", iLastConsecutiveFrameBegin, byteWritten, -1);
 					}
 				}
 				continue;
@@ -306,7 +306,7 @@ int ValidateFile(unsigned char *baseptr,int iFileSize,MPEGINFO *mpginfo,ostream 
 					unsigned int size=iFrame-iLastConsecutiveFrameBegin;
 					size_t byteWritten=writeFile(prefix, "mp3", baseptr, iLastConsecutiveFrameBegin, size, padding);
 					if (byteWritten < size)
-						PrintMessage(out,"ERROR",filename,"Writing file failed！", iLastConsecutiveFrameBegin, byteWritten, -1);
+						PrintMessage(out,"ERROR",filename,"Writing file failed! File exists or disk full.", iLastConsecutiveFrameBegin, byteWritten, -1);
 				}
 				break;
 			}
@@ -319,7 +319,7 @@ int ValidateFile(unsigned char *baseptr,int iFileSize,MPEGINFO *mpginfo,ostream 
 					unsigned int size=iFrame-iLastConsecutiveFrameBegin;
 					size_t byteWritten=writeFile(prefix, "mp3", baseptr, iLastConsecutiveFrameBegin, size, padding);
 					if (byteWritten < size)
-						PrintMessage(out,"ERROR",filename,"Writing file failed！", iLastConsecutiveFrameBegin, byteWritten, -1);
+						PrintMessage(out,"ERROR",filename,"Writing file failed! File exists or disk full.", iLastConsecutiveFrameBegin, byteWritten, -1);
 				}
 
 			}

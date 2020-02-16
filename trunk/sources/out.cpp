@@ -61,11 +61,13 @@ unsigned int writeFile(char *prefix, const char *ext, unsigned char *data, unsig
 	ssize=snprintf(NULL,0,buff,prefix, index, index+size, size, ext);
 	newFilename=(char *)malloc(ssize+1);
 	snprintf(newFilename,ssize+1,buff,prefix, index, index+size, size, ext);
-	fp=fopen(newFilename,"wb");
-	bytesWritten=fwrite(&data[index],sizeof(char),size,fp);
-	fclose(fp);
-	free(newFilename);
-	free(buff);
+	if(access(newFilename,F_OK)==-1){
+		fp=fopen(newFilename,"wb");
+		bytesWritten=fwrite(&data[index],sizeof(char),size,fp);
+		fclose(fp);
+		free(newFilename);
+		free(buff);
+	}
 	return bytesWritten;
 }
 
