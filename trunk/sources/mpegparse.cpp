@@ -230,6 +230,15 @@ int ValidateFile(unsigned char *baseptr,int iFileSize,MPEGINFO *mpginfo,ostream 
 				}
 				iLastMPEGFrame=iFrame;
 				iFrame+=iFrameSize;
+				if(iFrame == iFileSize){
+					PrintMessage(out,"INFO",filename,"Last good consecutive range", iLastConsecutiveFrameBegin, -1, iFrame);
+					if(bSplitFile){
+						unsigned int size=iFrame-iLastConsecutiveFrameBegin;
+						size_t byteWritten=writeFile(prefix, "mp3", baseptr, iLastConsecutiveFrameBegin, size, padding);
+						if (byteWritten < size)
+							PrintMessage(out,"ERROR",filename,"Writing file failed！", iLastConsecutiveFrameBegin, byteWritten, -1);
+					}
+				}
 				continue;
 			}
 		}
