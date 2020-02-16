@@ -263,7 +263,12 @@ int ValidateFile(unsigned char *baseptr,int iFileSize,MPEGINFO *mpginfo,ostream 
 				if(!fix) PrintMessage(out,"WARNING",filename,"Garbage at the end of the file",mpginfo->garbage_at_the_end, -1, iFileSize);
 				iFrame+=CheckTags(baseptr,iFrame,iFileSize,out,filename,mpginfo);
 				PrintMessage(out,"INFO",filename,"Last good consecutive range", iLastConsecutiveFrameBegin, -1, iFrame);
-				if(bSplitFile) writeFile(prefix, "mp3", baseptr, iLastConsecutiveFrameBegin, iFrame-iLastConsecutiveFrameBegin, padding);
+				if(bSplitFile){
+					unsigned int size=iFrame-iLastConsecutiveFrameBegin;
+					size_t byteWritten=writeFile(prefix, "mp3", baseptr, iLastConsecutiveFrameBegin, size, padding);
+					if (byteWritten < size)
+						PrintMessage(out,"ERROR",filename,"Writing file failed！", iLastConsecutiveFrameBegin, byteWritten, -1);
+				}
 				break;
 			}
 			mpginfo->mpeg_stream_error=iFrame;
@@ -271,7 +276,12 @@ int ValidateFile(unsigned char *baseptr,int iFileSize,MPEGINFO *mpginfo,ostream 
 				PrintMessage(out,"WARNING",filename,"MPEG stream error, resynchronized successfully",mpginfo->mpeg_stream_error, -1, iNewFrame);
 				iFrame+=CheckTags(baseptr,iFrame,iFileSize,out,filename,mpginfo);
 				PrintMessage(out,"INFO",filename,"Last good consecutive range", iLastConsecutiveFrameBegin, -1, iFrame);
-				if(bSplitFile) writeFile(prefix, "mp3", baseptr, iLastConsecutiveFrameBegin, iFrame-iLastConsecutiveFrameBegin, padding);
+				if(bSplitFile){
+					unsigned int size=iFrame-iLastConsecutiveFrameBegin;
+					size_t byteWritten=writeFile(prefix, "mp3", baseptr, iLastConsecutiveFrameBegin, size, padding);
+					if (byteWritten < size)
+						PrintMessage(out,"ERROR",filename,"Writing file failed！", iLastConsecutiveFrameBegin, byteWritten, -1);
+				}
 
 			}
 			mpginfo->iErrors++;
