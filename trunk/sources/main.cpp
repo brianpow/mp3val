@@ -29,7 +29,7 @@ using namespace std;
 #include "out.h"
 
 #define PROGRAM "MP3val"
-#define VERSION "0.1.16"
+#define VERSION "0.1.17"
 
 char pcBuffer[CROSSAPI_MAX_PATH+1];
 char pcBuffer2[CROSSAPI_MAX_PATH+1];

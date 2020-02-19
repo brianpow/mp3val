@@ -39,7 +39,8 @@ int CheckMP3CRC(unsigned char *baseptr,int index,MPEGINFO *mpginfo,bool fix);
 int ValidateID3v1Tag(unsigned char *baseptr,int index,int size, MPEGINFO *mpginfo);
 int ValidateID3v2Tag(unsigned char *baseptr,int index,int size, MPEGINFO *mpginfo);
 int ValidateAPEv2Tag(unsigned char *baseptr,int index,int size, MPEGINFO *mpginfo);
-
+int ValidateLyrics3v1Tag(unsigned char *baseptr,int index,int size, MPEGINFO *mpginfo);
+int ValidateLyrics3v2Tag(unsigned char *baseptr,int index,int size, MPEGINFO *mpginfo);
 int ParseXingHeader(unsigned char *baseptr,int index,MPEGINFO *mpginfo);
 int ParseVBRIHeader(unsigned char *baseptr,int index,MPEGINFO *mpginfo);
 
@@ -48,6 +49,56 @@ int ParseRIFFHeader(unsigned char *baseptr,int index,int iFileSize,int *iNewFile
 int MPEGResync(unsigned char *baseptr,int index,int iFileSize,int frames);
 
 DWORD rotate_dword(DWORD x);
+
+int ValidateLyrics3v1Tag(unsigned char *baseptr,int index,int size, MPEGINFO *mpginfo){
+	const char *tagHeader ="LYRICSBEGIN", *tagFooter="LYRICSEND";
+	if(!memcmp(&baseptr[index],tagHeader,strlen(tagHeader)))
+		for(int i=0;i<=size-strlen(tagFooter)&&i<=5100;i++)		{
+			if(!memcmp(&baseptr[i+index+strlen(tagHeader)],tagFooter,strlen(tagFooter)))
+				return i+strlen(tagHeader)+strlen(tagFooter);
+		}
+	return 0;
+}
+
+int ValidateLyrics3v2Tag(unsigned char *baseptr,int index,int size, MPEGINFO *mpginfo){
+	const char *tagHeader ="LYRICSBEGIN", *tagFooter="LYRICS200";
+	char szTagID[4], szTagSize[7];
+	int iTagSize;
+	if(!memcmp(&baseptr[index],tagHeader,strlen(tagHeader))){
+		int i=strlen(tagHeader);
+		bool bTagFound=true;
+		while(i<=size-strlen(tagFooter)-6&&bTagFound){
+			bTagFound=false;
+			memcpy(szTagID,&baseptr[index+i],3);
+			szTagID[3]='\0';
+			if(strcmp(szTagID,"IND")||
+				strcmp(szTagID,"LYR")||
+				strcmp(szTagID,"INF")||
+				strcmp(szTagID,"AUT")||
+				strcmp(szTagID,"EAL")||
+				strcmp(szTagID,"EAR")||
+				strcmp(szTagID,"ETT")||
+				strcmp(szTagID,"IMG")){
+				bTagFound=true;
+				i+=3;
+				memcpy(szTagSize,&baseptr[i],5);
+				szTagSize[5]='\0';
+				iTagSize=atoi(szTagSize);
+				if(iTagSize<1)
+					return 0;
+				i+=iTagSize;
+			}
+		}
+		if(i>strlen(tagHeader)){
+			memcpy(szTagSize,&baseptr[i],6);
+			szTagSize[6]='\0';
+			iTagSize=atoi(szTagSize);
+			if(i==iTagSize-1 && !memcmp(&baseptr[i+6],tagFooter,strlen(tagFooter)))
+				return i+6+strlen(tagFooter);
+		}
+	}
+	return 0;
+}
 
 int ValidateEnhancedTag(unsigned char *baseptr,int index,int size, MPEGINFO *mpginfo){
 	if(size>=4 && !memcmp(&baseptr[index],"TAG+",4)){
@@ -113,6 +164,18 @@ int CheckTags(unsigned char *baseptr,int pos,int end,ostream *out,char *filename
 	do{
 		tagFound=false;
 		index=pos+totalBytes;
+		if((tmp=ValidateLyrics3v2Tag(baseptr,index,end-index,mpginfo))){
+			PrintMessage(out,"WARNING",filename,"Lyrics v2 tag found!\n",index,tmp);
+			totalBytes+=tmp;
+			tagFound=true;
+			index=pos+totalBytes;
+		}
+		if((tmp=ValidateLyrics3v1Tag(baseptr,index,end-index,mpginfo))){
+			PrintMessage(out,"WARNING",filename,"Lyrics v1 tag found!\n",index,tmp);
+			totalBytes+=tmp;
+			tagFound=true;
+			index=pos+totalBytes;
+		}
 		if((tmp=ValidateEnhancedTag(baseptr,index,end-index,mpginfo))){
 			if(!ValidateID3v1Tag(baseptr,index+tmp,end-index,mpginfo))
 				PrintMessage(out,"WARNING",filename,"Enhanced Tag found but no ID3 v1 Tag followed!\n",index,tmp);
