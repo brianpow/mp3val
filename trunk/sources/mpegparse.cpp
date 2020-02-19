@@ -298,9 +298,9 @@ int ValidateFile(unsigned char *baseptr,int iFileSize,MPEGINFO *mpginfo,ostream 
 		else {
 			iNewFrame=MPEGResync(baseptr,iLastMPEGFrame?(iLastMPEGFrame+1):iFrame,iFileSize,6);
 			if(iNewFrame==-1) {
+				iFrame+=CheckTags(baseptr,iFrame,iFileSize,out,filename,mpginfo);
 				mpginfo->garbage_at_the_end=iFrame;
 				if(!fix) PrintMessage(out,"WARNING",filename,"Garbage at the end of the file",mpginfo->garbage_at_the_end, -1, iFileSize);
-				iFrame+=CheckTags(baseptr,iFrame,iFileSize,out,filename,mpginfo);
 				PrintMessage(out,"INFO",filename,"Last good consecutive range", iLastConsecutiveFrameBegin, -1, iFrame);
 				if(bSplitFile){
 					unsigned int size=iFrame-iLastConsecutiveFrameBegin;
