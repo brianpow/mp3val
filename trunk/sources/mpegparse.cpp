@@ -133,9 +133,10 @@ int ValidateID3v1Tag(unsigned char *baseptr,int index,int size, MPEGINFO *mpginf
 }
 int CheckFrontTags(unsigned char *baseptr,int pos,int end,ostream *out,char *filename,MPEGINFO *mpginfo){
 	int totalBytes=0, tmp, index;
-	bool tagFound;
+	bool bTagFound;
+
 	do{
-		tagFound=false;
+		bTagFound=false;
 		index=pos+totalBytes;
 		if((tmp=ValidateID3v2Tag(baseptr,index,end-index,mpginfo))){
 			if(pos == 0)
@@ -143,7 +144,8 @@ int CheckFrontTags(unsigned char *baseptr,int pos,int end,ostream *out,char *fil
 			else
 				PrintMessage(out,"WARNING",filename,"ID3 v2 tag found, it should be at the beginning or the end of file!\n",index,tmp);
 			totalBytes+=tmp;
-			tagFound=true;
+
+			bTagFound=true;
 			index=pos+totalBytes;
 		}
 		if((tmp=ValidateAPEv2Tag(baseptr,index,end-index,mpginfo))){
@@ -152,10 +154,10 @@ int CheckFrontTags(unsigned char *baseptr,int pos,int end,ostream *out,char *fil
 			else
 				PrintMessage(out,"WARNING",filename,"APE v2 tag found, it should be at the beginning or the end of file!\n",index,tmp);
 			totalBytes+=tmp;
-			tagFound=true;
+			bTagFound=true;
 			index=pos+totalBytes;
 		}
-	}while(tagFound==true);
+	}while(bTagFound==true&&index<end);
 	return totalBytes;
 }
 int CheckTags(unsigned char *baseptr,int pos,int end,ostream *out,char *filename,MPEGINFO *mpginfo){
@@ -165,12 +167,14 @@ int CheckTags(unsigned char *baseptr,int pos,int end,ostream *out,char *filename
 		tagFound=false;
 		index=pos+totalBytes;
 		if((tmp=ValidateLyrics3v2Tag(baseptr,index,end-index,mpginfo))){
+			mpginfo->lyrics3v2++;
 			PrintMessage(out,"WARNING",filename,"Lyrics v2 tag found!\n",index,tmp);
 			totalBytes+=tmp;
 			tagFound=true;
 			index=pos+totalBytes;
 		}
 		if((tmp=ValidateLyrics3v1Tag(baseptr,index,end-index,mpginfo))){
+			mpginfo->lyrics3v1++;
 			PrintMessage(out,"WARNING",filename,"Lyrics v1 tag found!\n",index,tmp);
 			totalBytes+=tmp;
 			tagFound=true;
@@ -189,12 +193,13 @@ int CheckTags(unsigned char *baseptr,int pos,int end,ostream *out,char *filename
 			tagFound=true;
 			index=pos+totalBytes;
 		}
+
 		if((tmp=CheckFrontTags(baseptr,index,end,out,filename,mpginfo))){
 			totalBytes+=tmp;
 			tagFound=true;
 			index=pos+totalBytes;
 		}
-	}while(tagFound==true);
+	}while(tagFound==true&&index<end);
 	return totalBytes;
 }
 

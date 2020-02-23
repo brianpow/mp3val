@@ -148,6 +148,9 @@ int PrintReport(ostream *out,char *filename,MPEGINFO *mpginfo) {
 	}
 
 	tags_total=
+		mpginfo->lyrics3v1+
+		mpginfo->lyrics3v2+
+		mpginfo->enhancedTag+
 		mpginfo->id3v1+
 		mpginfo->id3v2+
 		mpginfo->apev2;
@@ -189,12 +192,18 @@ int PrintReport(ostream *out,char *filename,MPEGINFO *mpginfo) {
 		if(tags_total) {
 			if(mpginfo->id3v1>1||mpginfo->id3v2>1||mpginfo->apev2>1) {
 				(*out)<<tags_total<<" tags (";
+				(*out)<<mpginfo->lyrics3v1<<" Lyrics3v1, ";
+				(*out)<<mpginfo->lyrics3v2<<" Lyrics3v2, ";
+				(*out)<<mpginfo->enhancedTag<<" enhancedTag, ";
 				(*out)<<mpginfo->id3v1<<" ID3v1, ";
 				(*out)<<mpginfo->id3v2<<" ID3v2, ";
 				(*out)<<mpginfo->apev2<<" APEv2";
 				(*out)<<")";
 			}
 			else {
+				if(mpginfo->lyrics3v1) (*out)<<"+Lyrics3v1";
+				if(mpginfo->lyrics3v2) (*out)<<"+Lyrics3v2";
+				if(mpginfo->enhancedTag) (*out)<<"+enhancedTag";
 				if(mpginfo->id3v1) (*out)<<"+ID3v1";
 				if(mpginfo->id3v2) (*out)<<"+ID3v2";
 				if(mpginfo->apev2) (*out)<<"+APEv2";
